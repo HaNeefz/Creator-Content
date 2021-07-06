@@ -8,10 +8,12 @@ import 'package:get/get.dart';
 import 'package:multi_image_picker2/multi_image_picker2.dart';
 import 'package:video_player/video_player.dart';
 
+import 'object_keys.dart';
+
 enum CONTENT_TYPE {
   TEXT,
   BULLET,
-  TEXT_BOLD,
+  // TEXT_BOLD,
   URL,
   IMAGE,
   VIDEO,
@@ -31,18 +33,20 @@ class ObjectContent {
     this.id = DateTime.now().microsecondsSinceEpoch;
     if (this.type == CONTENT_TYPE.BULLET ||
         this.type == CONTENT_TYPE.TEXT ||
-        this.type == CONTENT_TYPE.TEXT_BOLD ||
+        // this.type == CONTENT_TYPE.TEXT_BOLD ||
         this.type == CONTENT_TYPE.URL)
       textController = TextEditingController(text: data ?? '');
   }
 
   /// [onSelect] if true is selecting Object.
   /// else is editing layout Object.
-  Widget createWidget(bool onSelect, int objId) {
+  Widget createWidget(bool onSelect, int objId,
+      {ObjectKeys? objKey, int? index}) {
     Widget child = Container();
     switch (type) {
       case CONTENT_TYPE.TEXT:
         child = DefaultTextField(
+          key: objKey!.objKey,
           controller: textController,
           textSize: TEXT_SIZE.NORMAL,
           hintText: 'some text ...',
@@ -51,6 +55,7 @@ class ObjectContent {
         break;
       case CONTENT_TYPE.BULLET:
         child = DefaultTextField(
+          key: objKey!.objKey,
           controller: textController,
           textSize: TEXT_SIZE.NORMAL,
           hintText: '• text',
@@ -75,16 +80,18 @@ class ObjectContent {
           },
         );
         break;
-      case CONTENT_TYPE.TEXT_BOLD:
-        child = DefaultTextField(
-          controller: textController,
-          textSize: TEXT_SIZE.BIG_BOLD,
-          hintText: 'some text ...',
-          onChanged: (value) => data = value,
-        );
-        break;
+      // case CONTENT_TYPE.TEXT_BOLD:
+      //   child = DefaultTextField(
+      //     key: objKey!.objKey,
+      //     controller: textController,
+      //     textSize: TEXT_SIZE.BIG_BOLD,
+      //     hintText: 'some text ...',
+      //     onChanged: (value) => data = value,
+      //   );
+      //   break;
       case CONTENT_TYPE.URL:
         child = DefaultTextField(
+          key: objKey!.objKey,
           controller: textController,
           textSize: TEXT_SIZE.NORMAL,
           textColor: Colors.blue,
@@ -151,7 +158,7 @@ class ObjectContent {
     return Container(
       child: onSelect
           ? SelectObjectWidget(objId: objId, child: child)
-          : ContentLayout(child: child),
+          : ContentLayout(key: ValueKey(objId), objId: objId, child: child),
     );
   }
 

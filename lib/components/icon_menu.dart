@@ -28,7 +28,7 @@ class IconMenu extends StatelessWidget {
             _iconButton(Icons.text_fields_rounded, CONTENT_TYPE.TEXT),
             _iconButton(
                 Icons.format_list_bulleted_rounded, CONTENT_TYPE.BULLET),
-            _iconButton(Icons.format_bold_rounded, CONTENT_TYPE.TEXT_BOLD),
+            // _iconButton(Icons.format_bold_rounded, CONTENT_TYPE.TEXT_BOLD),
           ],
         ),
         _iconButtonGroup(
@@ -106,12 +106,12 @@ class IconMenu extends StatelessWidget {
           index: index,
         );
         break;
-      case CONTENT_TYPE.TEXT_BOLD:
-        controller.addContent(
-          ObjectContent(type, data: ""),
-          index: index,
-        );
-        break;
+      // case CONTENT_TYPE.TEXT_BOLD:
+      //   controller.addContent(
+      //     ObjectContent(type, data: ""),
+      //     index: index,
+      //   );
+      //   break;
       case CONTENT_TYPE.URL:
         controller.addContent(
           ObjectContent(type, data: ""),

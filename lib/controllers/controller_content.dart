@@ -1,6 +1,8 @@
 import 'dart:convert';
 
+import 'package:creator_content/components/default_textfield.dart';
 import 'package:creator_content/models/object_content.dart';
+import 'package:creator_content/models/object_keys.dart';
 import 'package:creator_content/utils/popup.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -9,12 +11,18 @@ import '../models/object_content.dart';
 
 class ControllerContent extends GetxController {
   static ControllerContent get to => Get.find();
-  // final GlobalKey key = GlobalKey();
   var contents = <ObjectContent>[].obs;
   var selectedContent = <int>{}.obs;
   var isSelectedContent = false.obs;
   var isEditLayout = false.obs;
-  bool get hasContent => contents.length > 1;
+  var isModify = false.obs;
+
+  var _textIsBold = false.obs;
+  var _textIsItalic = false.obs;
+  var _textIsUnderline = false.obs;
+
+  var objKeys = <ObjectKeys>[];
+  var modifyIndexAt = 0;
 
   @override
   void onInit() {
@@ -26,6 +34,8 @@ class ControllerContent extends GetxController {
     super.onReady();
   }
 
+  bool get hasContent => contents.length > 1;
+
   bool get showIconDelete =>
       selectedContent.length > 0 && isSelectedContent.value;
 
@@ -33,6 +43,62 @@ class ControllerContent extends GetxController {
 
   bool get hasEditObjectOrSelected =>
       isSelectedContent.value || isEditLayout.value;
+
+  bool get hasModify => isModify.value;
+
+  ObjectKeys _findKeysByObjId() {
+    ObjectKeys key =
+        objKeys.firstWhere((_objKeys) => _objKeys.objId == modifyIndexAt);
+    return key;
+  }
+
+  void setBigText() =>
+      _findKeysByObjId().objKey.currentState!.changeTextSize(TEXT_SIZE.BIG);
+
+  void setNormalText() =>
+      _findKeysByObjId().objKey.currentState!.changeTextSize(TEXT_SIZE.NORMAL);
+
+  void setBoldText() {
+    _findKeysByObjId().objKey.currentState!.changeTextSize(TEXT_SIZE.BOLD);
+    _textIsBold.toggle();
+  }
+
+  void setItalicText() {
+    _findKeysByObjId()
+        .objKey
+        .currentState!
+        .changeTextDecoration(TEXT_STYLE.ITALIC);
+    _textIsItalic.toggle();
+  }
+
+  void setUnderlineText() {
+    _findKeysByObjId()
+        .objKey
+        .currentState!
+        .changeTextDecoration(TEXT_STYLE.UNDERLINE);
+    _textIsUnderline.toggle();
+  }
+
+  // void setLinethroughText() => _findKeysByObjId()
+  //     .objKey
+  //     .currentState!
+  //     .changeTextDecoration(TEXT_STYLE.LINETHROUGH);
+
+  bool get textIsBold => _textIsBold.value;
+  bool get textIsItalic => _textIsItalic.value;
+  bool get textIsUnderLine => _textIsUnderline.value;
+
+  void getTextIsBold() {
+    _textIsBold(_findKeysByObjId().objKey.currentState!.bold);
+  }
+
+  void getTextIsItalic() {
+    _textIsItalic(_findKeysByObjId().objKey.currentState!.italic);
+  }
+
+  void getTextIsUnderline() {
+    _textIsUnderline(_findKeysByObjId().objKey.currentState!.underline);
+  }
 
   void confirmEditUI() {
     if (isEditLayout.value)
@@ -49,6 +115,14 @@ class ControllerContent extends GetxController {
     else {
       contents.insert(index, objContent);
     }
+    // if (objContent.type == CONTENT_TYPE.BULLET ||
+    //     objContent.type == CONTENT_TYPE.TEXT ||
+    //     objContent.type == CONTENT_TYPE.TEXT_BOLD ||
+    //     objContent.type == CONTENT_TYPE.URL)
+    objKeys.add(ObjectKeys(
+      objContent.id!,
+      objKey: GlobalKey<DefaultTextFieldState>(),
+    ));
   }
 
   void selectedObj(int index) {
@@ -103,6 +177,13 @@ class ControllerContent extends GetxController {
     }
     final ObjectContent item = contents.removeAt(oldIndex);
     contents.insert(newIndex, item);
+  }
+
+  onModify([int? objId]) {
+    isModify.toggle();
+    if (objId != null) {
+      modifyIndexAt = objId;
+    }
   }
 
   onSaveData() {

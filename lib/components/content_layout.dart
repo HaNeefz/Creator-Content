@@ -4,7 +4,9 @@ import 'package:get/state_manager.dart';
 
 class ContentLayout extends StatelessWidget {
   final Widget child;
-  const ContentLayout({Key? key, required this.child}) : super(key: key);
+  final int objId;
+  const ContentLayout({Key? key, required this.child, required this.objId})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -14,7 +16,9 @@ class ContentLayout extends StatelessWidget {
             children: [
               Expanded(
                 child: IgnorePointer(
-                  ignoring: controller.isEditLayout.value,
+                  ignoring: controller.isEditLayout.value ||
+                      (controller.hasModify &&
+                          objId != controller.modifyIndexAt),
                   child: child,
                 ),
               ),

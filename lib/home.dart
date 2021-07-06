@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import 'components/button_add_content.dart';
+import 'components/text_tools_bar.dart';
 import 'controllers/controller_content.dart';
 
 class MyHomePage extends StatelessWidget {
@@ -46,6 +47,7 @@ class MyHomePage extends StatelessWidget {
       ),
       body: Obx(() => Column(
             children: [
+              TextToolsBar(),
               Expanded(
                   child: ReorderableListView(
                 keyboardDismissBehavior:
@@ -56,11 +58,18 @@ class MyHomePage extends StatelessWidget {
                     int index = controller.contents.indexOf(data);
                     return SlidableWidget(
                         key: ValueKey(data.id),
+                        objId: data.id!,
+                        contentTpye: data.type,
                         index: index,
                         child: Container(
                             key: ValueKey(data.id),
                             child: data.createWidget(
-                                controller.isSelectedContent.value, data.id!)));
+                              controller.isSelectedContent.value,
+                              data.id!,
+                              objKey: controller.objKeys.firstWhere(
+                                  (objKey) => objKey.objId == data.id!),
+                              index: index,
+                            )));
                   }).toList(),
                   SizedBox(key: UniqueKey(), height: 150)
                 ],
