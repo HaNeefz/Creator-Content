@@ -18,14 +18,14 @@ class _PopupMenuContentStateType extends State<PopupMenuContentType> {
   Widget build(BuildContext context) {
     return PopupMenuButton<CONTENT_TYPE>(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      icon: Icon(Icons.add),
+      icon: Icon(Icons.add, color: Colors.black),
       onSelected: (CONTENT_TYPE result) {
         widget.onSelected.call(result);
       },
       itemBuilder: (BuildContext context) => <PopupMenuEntry<CONTENT_TYPE>>[
         const PopupMenuItem<CONTENT_TYPE>(
           value: CONTENT_TYPE.TEXT,
-          child: Icon(Icons.text_fields),
+          child: Icon(Icons.text_fields, color: Colors.black),
         ),
         const PopupMenuItem<CONTENT_TYPE>(
           value: CONTENT_TYPE.BULLET,
@@ -33,27 +33,27 @@ class _PopupMenuContentStateType extends State<PopupMenuContentType> {
         ),
         const PopupMenuItem<CONTENT_TYPE>(
           value: CONTENT_TYPE.URL,
-          child: Icon(Icons.add_link_rounded),
+          child: Icon(Icons.add_link_rounded, color: Colors.black),
         ),
         const PopupMenuItem<CONTENT_TYPE>(
           value: CONTENT_TYPE.IMAGE,
-          child: Icon(Icons.photo_library),
+          child: Icon(Icons.photo_library, color: Colors.black),
         ),
         const PopupMenuItem<CONTENT_TYPE>(
           value: CONTENT_TYPE.VIDEO,
-          child: Icon(Icons.video_collection_rounded),
+          child: Icon(Icons.video_collection_rounded, color: Colors.black),
         ),
         const PopupMenuItem<CONTENT_TYPE>(
           value: CONTENT_TYPE.LOCATION,
-          child: Icon(Icons.location_on_outlined),
+          child: Icon(Icons.location_on_outlined, color: Colors.black),
         ),
         const PopupMenuItem<CONTENT_TYPE>(
           value: CONTENT_TYPE.YOUTUBE,
-          child: Icon(FontAwesomeIcons.youtube),
+          child: Icon(FontAwesomeIcons.youtube, color: Colors.black),
         ),
         const PopupMenuItem<CONTENT_TYPE>(
           value: CONTENT_TYPE.TIKTOK,
-          child: Icon(FontAwesomeIcons.tiktok),
+          child: Icon(FontAwesomeIcons.tiktok, color: Colors.black),
         ),
       ],
     );

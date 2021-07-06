@@ -31,24 +31,24 @@ class SelectorObject extends StatelessWidget {
                   addContentObject(type);
                 },
               ),
-              iconButtonCustom(
-                icon: Icons.keyboard_arrow_up_outlined,
-                onPressed: controller.hasContent && controller.isSwapUp()
-                    ? () => controller.swapUp()
-                    : null,
-              ),
-              iconButtonCustom(
-                icon: Icons.keyboard_arrow_down_outlined,
-                onPressed: controller.hasContent && controller.isSwapDown()
-                    ? () => controller.swapDown()
-                    : null,
-              ),
-              iconButtonCustom(
-                icon: Icons.remove,
-                onPressed: controller.hasContent && controller.isSwapUp()
-                    ? () => controller.removeContent()
-                    : null,
-              ),
+              // iconButtonCustom(
+              //   icon: Icons.keyboard_arrow_up_outlined,
+              //   onPressed: controller.hasContent && controller.isSwapUp()
+              //       ? () => controller.swapUp()
+              //       : null,
+              // ),
+              // iconButtonCustom(
+              //   icon: Icons.keyboard_arrow_down_outlined,
+              //   onPressed: controller.hasContent && controller.isSwapDown()
+              //       ? () => controller.swapDown()
+              //       : null,
+              // ),
+              // iconButtonCustom(
+              //   icon: Icons.remove,
+              //   onPressed: controller.hasContent && controller.isSwapUp()
+              //       ? () => controller.removeContent()
+              //       : null,
+              // ),
             ],
           ),
         ));

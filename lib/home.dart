@@ -1,6 +1,8 @@
+import 'package:creator_content/components/slidable_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import 'components/button_add_content.dart';
 import 'controllers/controller_content.dart';
 
 class MyHomePage extends StatelessWidget {
@@ -12,29 +14,61 @@ class MyHomePage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text('Creator content'),
+        leading: Obx(() {
+          if (controller.showIconDelete) {
+            return IconButton(
+              icon: Icon(Icons.delete),
+              onPressed: () => controller.removeSelectedObject(),
+            );
+          } else
+            return Container();
+          // if (controller.isSelectedContent.value) {
+          //   return Checkbox(
+          //     value: controller.isSelectedAll,
+          //     onChanged: (v) {
+
+          //     },
+          //   );
+          // }
+          // else
+          //   return Container();
+        }),
         actions: [
-          IconButton(
-            icon: Icon(Icons.send),
-            onPressed: () => controller.onSaveData(),
+          Obx(
+            () => IconButton(
+              icon: Icon(!controller.hasEditObjectOrSelected
+                  ? Icons.send
+                  : Icons.check),
+              onPressed: controller.confirmEditUI,
+            ),
           )
         ],
       ),
       body: Obx(() => Column(
             children: [
               Expanded(
-                  child: ListView.builder(
-                itemCount: controller.contents.length,
+                  child: ReorderableListView(
                 keyboardDismissBehavior:
                     ScrollViewKeyboardDismissBehavior.onDrag,
-                itemBuilder: (context, i) {
-                  var data = controller.contents[i];
-                  return Container(
-                      key: ValueKey(data.id),
-                      child: data.createWidget(controller.isFocus(i)));
-                },
+                buildDefaultDragHandles: controller.isEditLayout.value,
+                children: [
+                  ...controller.contents.map((data) {
+                    int index = controller.contents.indexOf(data);
+                    return SlidableWidget(
+                        key: ValueKey(data.id),
+                        index: index,
+                        child: Container(
+                            key: ValueKey(data.id),
+                            child: data.createWidget(
+                                controller.isSelectedContent.value, data.id!)));
+                  }).toList(),
+                  SizedBox(key: UniqueKey(), height: 150)
+                ],
+                onReorder: controller.onReorder,
               ))
             ],
           )),
+      floatingActionButton: ButtonAddContent(),
     );
   }
 }

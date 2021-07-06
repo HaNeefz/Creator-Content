@@ -6,6 +6,7 @@ enum TEXT_SIZE { NORMAL, NORMAL_BOLD, BIG, BIG_BOLD }
 class DefaultTextField extends StatelessWidget {
   final TextEditingController? controller;
   final Function(String value)? onChanged;
+  final Function()? onTap;
   final String hintText;
   final Color textColor;
   final TEXT_SIZE textSize;
@@ -18,6 +19,7 @@ class DefaultTextField extends StatelessWidget {
     this.textSize = TEXT_SIZE.NORMAL,
     this.prefixIcon,
     this.textColor = Colors.black,
+    this.onTap,
   }) : super(key: key);
 
   @override
@@ -59,19 +61,26 @@ class DefaultTextField extends StatelessWidget {
           color: textColor,
         );
     }
-    return TextField(
-      controller: controller,
-      style: style,
-      decoration: InputDecoration(
-          prefixIcon: prefixIcon,
-          border: InputBorder.none,
-          hintText: hintText,
-          contentPadding: const EdgeInsets.all(8)),
-      minLines: null,
-      maxLines: null,
-      textInputAction: TextInputAction.newline,
-      keyboardType: TextInputType.multiline,
-      onChanged: (value) => onChanged?.call(value),
+    return Padding(
+      padding: const EdgeInsets.only(left: 10.0, right: 10.0),
+      child: TextField(
+        controller: controller,
+        style: style,
+        onTap: () {
+          onTap?.call();
+        },
+        decoration: InputDecoration(
+            focusedBorder: UnderlineInputBorder(),
+            prefixIcon: prefixIcon,
+            border: InputBorder.none,
+            hintText: hintText,
+            contentPadding: const EdgeInsets.all(8)),
+        minLines: null,
+        maxLines: null,
+        textInputAction: TextInputAction.newline,
+        keyboardType: TextInputType.multiline,
+        onChanged: (value) => onChanged?.call(value),
+      ),
     );
   }
 }

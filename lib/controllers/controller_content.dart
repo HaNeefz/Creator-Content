@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:creator_content/models/object_content.dart';
+import 'package:creator_content/utils/popup.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -8,11 +9,12 @@ import '../models/object_content.dart';
 
 class ControllerContent extends GetxController {
   static ControllerContent get to => Get.find();
+  // final GlobalKey key = GlobalKey();
   var contents = <ObjectContent>[].obs;
-
+  var selectedContent = <int>{}.obs;
+  var isSelectedContent = false.obs;
+  var isEditLayout = false.obs;
   bool get hasContent => contents.length > 1;
-
-  ObjectContent? firstItem;
 
   @override
   void onInit() {
@@ -22,69 +24,85 @@ class ControllerContent extends GetxController {
   @override
   void onReady() {
     super.onReady();
-    firstItem = ObjectContent(
-      CONTENT_TYPE.CONTROLLER,
+  }
+
+  bool get showIconDelete =>
+      selectedContent.length > 0 && isSelectedContent.value;
+
+  bool get isSelectedAll => selectedContent.length == contents.length;
+
+  bool get hasEditObjectOrSelected =>
+      isSelectedContent.value || isEditLayout.value;
+
+  void confirmEditUI() {
+    if (isEditLayout.value)
+      onEditContent();
+    else if (isSelectedContent.value)
+      onSelectedObject();
+    else
+      onSaveData();
+  }
+
+  void addContent(ObjectContent objContent, {int? index}) {
+    if (index == null)
+      contents.add(objContent);
+    else {
+      contents.insert(index, objContent);
+    }
+  }
+
+  void selectedObj(int index) {
+    if (selectedContent.contains(index))
+      selectedContent.remove(index);
+    else
+      selectedContent.add(index);
+  }
+
+  void removeSelectedObject() {
+    Popup.actions(
+      'Are you sure delete.',
+      onConfirm: () {
+        selectedContent.forEach((objId) {
+          contents.removeWhere((obj) => objId == obj.id);
+        });
+        selectedContent.clear();
+        _checkCompletedOnEdit();
+      },
     );
-    contents.add(firstItem!);
   }
 
-  isFocus(int index) {
-    return (_findIndexOfController() - 1 == index);
+  void _checkCompletedOnEdit() {
+    if (contents.length == 0 && isEditLayout.value) isEditLayout.toggle();
   }
 
-  int _findIndexOfController() => contents.indexOf(firstItem);
-
-  void addContent(ObjectContent objContent) {
-    debugPrint("add index : ${_findIndexOfController()}");
-    contents.insert(
-        _findIndexOfController() == 0 ? 0 : _findIndexOfController(),
-        objContent);
-    // contents.add(objContent);
+  void removeContentAt(int index) {
+    contents.removeAt(index);
+    _checkCompletedOnEdit();
   }
 
-  void removeContent() {
-    debugPrint("remove index : ${_findIndexOfController()}");
-    contents.removeAt(
-        _findIndexOfController() == 0 ? 0 : _findIndexOfController() - 1);
+  onSelectedObject() {
+    if (contents.length > 0) {
+      isSelectedContent.toggle();
+      if (!isSelectedContent.value) selectedContent.clear();
+    } else if (contents.length == 0 && isSelectedContent.value) {
+      isSelectedContent.toggle();
+    } else
+      Popup.error('No have object.');
   }
 
-  bool isSwapUp([int? _currentIndex]) {
-    int? currentIndex;
-    if (_currentIndex != null) {
-      currentIndex = _currentIndex;
-    } else {
-      currentIndex = _findIndexOfController();
+  onEditContent() {
+    if (contents.length > 0) {
+      isEditLayout.toggle();
+    } else
+      Popup.error('No have object.');
+  }
+
+  onReorder(int oldIndex, int newIndex) {
+    if (oldIndex < newIndex) {
+      newIndex -= 1;
     }
-    return currentIndex - 1 >= 0;
-  }
-
-  bool isSwapDown([int? _currentIndex]) {
-    int? currentIndex;
-    if (_currentIndex != null) {
-      currentIndex = _currentIndex;
-    } else {
-      currentIndex = _findIndexOfController();
-    }
-    return currentIndex + 1 < contents.length;
-  }
-
-  void swapUp() {
-    int currentIndex = _findIndexOfController();
-    if (isSwapUp(currentIndex)) {
-      // ObjectContent temp = contents.elementAt(currentIndex - 1);
-      // contents.insert(currentIndex, temp);
-      contents.removeAt(currentIndex);
-      contents.insert(currentIndex - 1, firstItem!);
-      // contents.removeAt(currentIndex + 1);
-    }
-  }
-
-  void swapDown() {
-    int currentIndex = _findIndexOfController();
-    if (isSwapDown(currentIndex)) {
-      contents.removeAt(currentIndex);
-      contents.insert(currentIndex + 1, firstItem!);
-    }
+    final ObjectContent item = contents.removeAt(oldIndex);
+    contents.insert(newIndex, item);
   }
 
   onSaveData() {
