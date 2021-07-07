@@ -19,9 +19,11 @@ class TextToolsBar extends StatelessWidget {
                   child: IconButton(
                     icon: Icon(
                       Icons.text_format_rounded,
+                      size: 20,
                     ),
-                    onPressed: () => controller.setBigText(),
+                    onPressed: () => controller.setNormalText(),
                   ),
+                  active: !controller.getTextIsLarge(),
                 ),
               ),
               Expanded(
@@ -29,10 +31,10 @@ class TextToolsBar extends StatelessWidget {
                   child: IconButton(
                     icon: Icon(
                       Icons.text_format_rounded,
-                      size: 20,
                     ),
-                    onPressed: () => controller.setNormalText(),
+                    onPressed: () => controller.setBigText(),
                   ),
+                  active: controller.getTextIsLarge(),
                 ),
               ),
               Expanded(
@@ -43,7 +45,7 @@ class TextToolsBar extends StatelessWidget {
                       ),
                       onPressed: () => controller.setBoldText(),
                     ),
-                    active: controller.textIsBold),
+                    active: controller.getTextIsBold()),
               ),
               Expanded(
                 child: activeStyle(
@@ -53,7 +55,7 @@ class TextToolsBar extends StatelessWidget {
                       ),
                       onPressed: () => controller.setItalicText(),
                     ),
-                    active: controller.textIsItalic),
+                    active: controller.getTextIsItalic()),
               ),
               Expanded(
                 child: activeStyle(
@@ -63,10 +65,11 @@ class TextToolsBar extends StatelessWidget {
                       ),
                       onPressed: () => controller.setUnderlineText(),
                     ),
-                    active: controller.textIsUnderLine),
+                    active: controller.getTextIsUnderline()),
               ),
               Expanded(
                 child: Container(
+                  margin: const EdgeInsets.all(3),
                   decoration: BoxDecoration(
                       color: Colors.red,
                       borderRadius: BorderRadius.circular(3)),
@@ -82,7 +85,7 @@ class TextToolsBar extends StatelessWidget {
   }
 
   Widget activeStyle({required Widget child, bool active = false}) {
-    debugPrint("active $active");
+    debugPrint('active : $active');
     return Container(
         decoration: BoxDecoration(
             color: active ? Colors.grey : Colors.transparent,

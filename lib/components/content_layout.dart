@@ -18,7 +18,7 @@ class ContentLayout extends StatelessWidget {
                 child: IgnorePointer(
                   ignoring: controller.isEditLayout.value ||
                       (controller.hasModify &&
-                          objId != controller.modifyIndexAt),
+                          objId != controller.modifyIndexAt.value),
                   child: child,
                 ),
               ),

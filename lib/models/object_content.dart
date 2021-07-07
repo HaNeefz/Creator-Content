@@ -25,6 +25,7 @@ enum CONTENT_TYPE {
 class ObjectContent {
   final CONTENT_TYPE type;
   late TextEditingController textController;
+  FocusNode? focusNode;
   int? id;
   dynamic data;
   int _currentTextLength = 0;
@@ -34,8 +35,10 @@ class ObjectContent {
     if (this.type == CONTENT_TYPE.BULLET ||
         this.type == CONTENT_TYPE.TEXT ||
         // this.type == CONTENT_TYPE.TEXT_BOLD ||
-        this.type == CONTENT_TYPE.URL)
+        this.type == CONTENT_TYPE.URL) {
       textController = TextEditingController(text: data ?? '');
+      focusNode = FocusNode();
+    }
   }
 
   /// [onSelect] if true is selecting Object.
@@ -47,6 +50,7 @@ class ObjectContent {
       case CONTENT_TYPE.TEXT:
         child = DefaultTextField(
           key: objKey!.objKey,
+          focusNode: focusNode,
           controller: textController,
           textSize: TEXT_SIZE.NORMAL,
           hintText: 'some text ...',
@@ -56,6 +60,7 @@ class ObjectContent {
       case CONTENT_TYPE.BULLET:
         child = DefaultTextField(
           key: objKey!.objKey,
+          focusNode: focusNode,
           controller: textController,
           textSize: TEXT_SIZE.NORMAL,
           hintText: '• text',
@@ -83,6 +88,7 @@ class ObjectContent {
       // case CONTENT_TYPE.TEXT_BOLD:
       //   child = DefaultTextField(
       //     key: objKey!.objKey,
+      // focusNode: focus,
       //     controller: textController,
       //     textSize: TEXT_SIZE.BIG_BOLD,
       //     hintText: 'some text ...',
@@ -92,6 +98,7 @@ class ObjectContent {
       case CONTENT_TYPE.URL:
         child = DefaultTextField(
           key: objKey!.objKey,
+          focusNode: focusNode,
           controller: textController,
           textSize: TEXT_SIZE.NORMAL,
           textColor: Colors.blue,

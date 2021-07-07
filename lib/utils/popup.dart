@@ -5,8 +5,8 @@ import 'package:get/get.dart';
 import '../components/icon_menu.dart';
 
 class Popup {
-  static iconMenu({bool isInsert = false, int? indexAt}) {
-    Get.dialog(AlertDialog(
+  static Future iconMenu({bool isInsert = false, int? indexAt}) {
+    return Get.dialog(AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
       title: Text("Menu"),
       content: IconMenu(

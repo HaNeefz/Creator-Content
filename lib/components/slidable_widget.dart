@@ -56,7 +56,7 @@ class SlidableWidget extends StatelessWidget {
                   // contentTpye == CONTENT_TYPE.TEXT_BOLD ||
                   contentTpye == CONTENT_TYPE.URL)
                 IconSlideAction(
-                  caption: 'Modify',
+                  caption: 'Style',
                   color: Colors.blue,
                   icon: !controller.hasModify
                       ? Icons.font_download_rounded

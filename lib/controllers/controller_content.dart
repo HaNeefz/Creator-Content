@@ -11,18 +11,17 @@ import '../models/object_content.dart';
 
 class ControllerContent extends GetxController {
   static ControllerContent get to => Get.find();
+
+  var lastFocus = FocusNode();
   var contents = <ObjectContent>[].obs;
   var selectedContent = <int>{}.obs;
+  var objKeys = <ObjectKeys>[].obs;
+  var modifyIndexAt = 0.obs;
+  var currentStyleObject =
+      ObjectKeys(objId: 1, objKey: GlobalKey<DefaultTextFieldState>()).obs;
   var isSelectedContent = false.obs;
   var isEditLayout = false.obs;
   var isModify = false.obs;
-
-  var _textIsBold = false.obs;
-  var _textIsItalic = false.obs;
-  var _textIsUnderline = false.obs;
-
-  var objKeys = <ObjectKeys>[];
-  var modifyIndexAt = 0;
 
   @override
   void onInit() {
@@ -48,19 +47,36 @@ class ControllerContent extends GetxController {
 
   ObjectKeys _findKeysByObjId() {
     ObjectKeys key =
-        objKeys.firstWhere((_objKeys) => _objKeys.objId == modifyIndexAt);
+        objKeys.firstWhere((_objKeys) => _objKeys.objId == modifyIndexAt.value);
     return key;
   }
 
-  void setBigText() =>
-      _findKeysByObjId().objKey.currentState!.changeTextSize(TEXT_SIZE.BIG);
+  setCurrentStyleObj(ObjectKeys objStyle) {
+    currentStyleObject.value.objId = objStyle.objId;
+    currentStyleObject.value.objKey = objStyle.objKey;
+    currentStyleObject.value.textIsLarge = objStyle.objKey.currentState!.large;
+    currentStyleObject.value.textIsBold = objStyle.objKey.currentState!.bold;
+    currentStyleObject.value.textIsItalic =
+        objStyle.objKey.currentState!.italic;
+    currentStyleObject.value.textIsUnderline =
+        objStyle.objKey.currentState!.underline;
+    currentStyleObject.update((val) {});
+    currentStyleObject.value.printValue();
+  }
 
-  void setNormalText() =>
-      _findKeysByObjId().objKey.currentState!.changeTextSize(TEXT_SIZE.NORMAL);
+  void setBigText() {
+    _findKeysByObjId().objKey.currentState!.changeTextSize(TEXT_SIZE.BIG);
+    setCurrentStyleObj(_findKeysByObjId());
+  }
+
+  void setNormalText() {
+    _findKeysByObjId().objKey.currentState!.changeTextSize(TEXT_SIZE.NORMAL);
+    setCurrentStyleObj(_findKeysByObjId());
+  }
 
   void setBoldText() {
     _findKeysByObjId().objKey.currentState!.changeTextSize(TEXT_SIZE.BOLD);
-    _textIsBold.toggle();
+    setCurrentStyleObj(_findKeysByObjId());
   }
 
   void setItalicText() {
@@ -68,7 +84,7 @@ class ControllerContent extends GetxController {
         .objKey
         .currentState!
         .changeTextDecoration(TEXT_STYLE.ITALIC);
-    _textIsItalic.toggle();
+    setCurrentStyleObj(_findKeysByObjId());
   }
 
   void setUnderlineText() {
@@ -76,28 +92,27 @@ class ControllerContent extends GetxController {
         .objKey
         .currentState!
         .changeTextDecoration(TEXT_STYLE.UNDERLINE);
-    _textIsUnderline.toggle();
+    setCurrentStyleObj(_findKeysByObjId());
   }
 
   // void setLinethroughText() => _findKeysByObjId()
   //     .objKey
   //     .currentState!
   //     .changeTextDecoration(TEXT_STYLE.LINETHROUGH);
-
-  bool get textIsBold => _textIsBold.value;
-  bool get textIsItalic => _textIsItalic.value;
-  bool get textIsUnderLine => _textIsUnderline.value;
-
-  void getTextIsBold() {
-    _textIsBold(_findKeysByObjId().objKey.currentState!.bold);
+  bool getTextIsLarge() {
+    return currentStyleObject.value.textIsLarge ?? false;
   }
 
-  void getTextIsItalic() {
-    _textIsItalic(_findKeysByObjId().objKey.currentState!.italic);
+  bool getTextIsBold() {
+    return currentStyleObject.value.textIsBold ?? false;
   }
 
-  void getTextIsUnderline() {
-    _textIsUnderline(_findKeysByObjId().objKey.currentState!.underline);
+  bool getTextIsItalic() {
+    return currentStyleObject.value.textIsItalic ?? false;
+  }
+
+  bool getTextIsUnderline() {
+    return currentStyleObject.value.textIsUnderline ?? false;
   }
 
   void confirmEditUI() {
@@ -120,9 +135,13 @@ class ControllerContent extends GetxController {
     //     objContent.type == CONTENT_TYPE.TEXT_BOLD ||
     //     objContent.type == CONTENT_TYPE.URL)
     objKeys.add(ObjectKeys(
-      objContent.id!,
+      objId: objContent.id!,
       objKey: GlobalKey<DefaultTextFieldState>(),
     ));
+    if (objContent.focusNode != null) {
+      lastFocus = objContent.focusNode!;
+      debugPrint('addContent obj.focus = $lastFocus');
+    }
   }
 
   void selectedObj(int index) {
@@ -182,7 +201,8 @@ class ControllerContent extends GetxController {
   onModify([int? objId]) {
     isModify.toggle();
     if (objId != null) {
-      modifyIndexAt = objId;
+      modifyIndexAt(objId);
+      setCurrentStyleObj(_findKeysByObjId());
     }
   }
 

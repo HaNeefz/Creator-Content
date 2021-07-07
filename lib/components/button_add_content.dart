@@ -58,7 +58,16 @@ class ButtonAddContent extends StatelessWidget {
               label: 'Add Content',
               labelStyle: TextStyle(fontSize: 18.0),
               labelBackgroundColor: Colors.white,
-              onTap: () => Popup.iconMenu(),
+              onTap: () async {
+                await Popup.iconMenu().then((value) {
+                  debugPrint('controller.lastFocus : ${controller.lastFocus}');
+                  debugPrint(
+                      'canRequestFocus : ${FocusScope.of(context).canRequestFocus}');
+                  if (FocusScope.of(context).canRequestFocus) {
+                    FocusScope.of(context).requestFocus(controller.lastFocus);
+                  }
+                });
+              },
               // onLongPress: () => print('FIRST CHILD LONG PRESS'),
             ),
             SpeedDialChild(
