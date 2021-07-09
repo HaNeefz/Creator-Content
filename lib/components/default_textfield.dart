@@ -48,13 +48,6 @@ class DefaultTextFieldState extends State<DefaultTextField> {
   }
 
   @override
-  void dispose() {
-    widget.controller?.dispose();
-    widget.focusNode?.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(left: 10.0, right: 10.0),
@@ -62,6 +55,7 @@ class DefaultTextFieldState extends State<DefaultTextField> {
         autofocus: true,
         controller: widget.controller,
         focusNode: widget.focusNode,
+        showCursor: true,
         style: style,
         onTap: () {
           widget.onTap?.call();

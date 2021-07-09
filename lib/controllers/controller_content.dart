@@ -12,7 +12,7 @@ import '../models/object_content.dart';
 class ControllerContent extends GetxController {
   static ControllerContent get to => Get.find();
 
-  var lastFocus = FocusNode();
+  var lastFocus = FocusNode().obs;
   var contents = <ObjectContent>[].obs;
   var selectedContent = <int>{}.obs;
   var objKeys = <ObjectKeys>[].obs;
@@ -38,7 +38,8 @@ class ControllerContent extends GetxController {
   bool get showIconDelete =>
       selectedContent.length > 0 && isSelectedContent.value;
 
-  bool get isSelectedAll => selectedContent.length == contents.length;
+  bool get isSelectedAll =>
+      selectedContent.length == contents.length && contents.length > 0;
 
   bool get hasEditObjectOrSelected =>
       isSelectedContent.value || isEditLayout.value;
@@ -95,10 +96,6 @@ class ControllerContent extends GetxController {
     setCurrentStyleObj(_findKeysByObjId());
   }
 
-  // void setLinethroughText() => _findKeysByObjId()
-  //     .objKey
-  //     .currentState!
-  //     .changeTextDecoration(TEXT_STYLE.LINETHROUGH);
   bool getTextIsLarge() {
     return currentStyleObject.value.textIsLarge ?? false;
   }
@@ -132,16 +129,15 @@ class ControllerContent extends GetxController {
     }
     // if (objContent.type == CONTENT_TYPE.BULLET ||
     //     objContent.type == CONTENT_TYPE.TEXT ||
-    //     objContent.type == CONTENT_TYPE.TEXT_BOLD ||
-    //     objContent.type == CONTENT_TYPE.URL)
+    //     // objContent.type == CONTENT_TYPE.TEXT_BOLD ||
+    //     objContent.type == CONTENT_TYPE.URL) {
     objKeys.add(ObjectKeys(
       objId: objContent.id!,
       objKey: GlobalKey<DefaultTextFieldState>(),
     ));
-    if (objContent.focusNode != null) {
-      lastFocus = objContent.focusNode!;
-      debugPrint('addContent obj.focus = $lastFocus');
-    }
+    lastFocus(objContent.focusNode);
+    debugPrint('addContent obj.focus = ${lastFocus.value.debugLabel}');
+    // }
   }
 
   void selectedObj(int index) {
@@ -183,6 +179,18 @@ class ControllerContent extends GetxController {
       Popup.error('No have object.');
   }
 
+  onSelectedAll(bool selected) {
+    if (selected)
+      contents.forEach((obj) {
+        if (!selectedContent.contains(obj.id)) {
+          selectedContent.add(obj.id!);
+        }
+      });
+    else {
+      selectedContent.clear();
+    }
+  }
+
   onEditContent() {
     if (contents.length > 0) {
       isEditLayout.toggle();
@@ -203,7 +211,12 @@ class ControllerContent extends GetxController {
     if (objId != null) {
       modifyIndexAt(objId);
       setCurrentStyleObj(_findKeysByObjId());
+      setNewFocus(objId);
     }
+  }
+
+  setNewFocus(int objId) {
+    lastFocus(contents.firstWhere((obj) => obj.id == objId).focusNode);
   }
 
   onSaveData() {

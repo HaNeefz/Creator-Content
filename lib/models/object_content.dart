@@ -37,7 +37,8 @@ class ObjectContent {
         // this.type == CONTENT_TYPE.TEXT_BOLD ||
         this.type == CONTENT_TYPE.URL) {
       textController = TextEditingController(text: data ?? '');
-      focusNode = FocusNode();
+      focusNode = FocusNode(debugLabel: this.id.toString());
+      debugPrint("create focusNode : ${focusNode!.debugLabel}");
     }
   }
 
