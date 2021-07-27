@@ -1,5 +1,6 @@
 import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:video_player/video_player.dart';
 
 class VideoPlayerWidget extends StatefulWidget {
@@ -27,8 +28,9 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
   @override
   void initState() {
     super.initState();
-
-    initailVideo();
+    SchedulerBinding.instance?.addPostFrameCallback((_) {
+      initailVideo();
+    });
   }
 
   initailVideo() async {
@@ -48,6 +50,8 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
         );
       },
     );
+
+    if (mounted) setState(() {});
   }
 
   @override
@@ -62,9 +66,11 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
       padding: const EdgeInsets.only(top: 5),
       color: Colors.black,
       height: 200,
-      child: Chewie(
-        controller: _chewieController!,
-      ),
+      child: _chewieController != null
+          ? Chewie(
+              controller: _chewieController!,
+            )
+          : Container(),
     );
   }
 }

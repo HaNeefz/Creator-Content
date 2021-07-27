@@ -51,20 +51,29 @@ class SlidableWidget extends StatelessWidget {
                   Popup.iconMenu(isInsert: true, indexAt: index);
                 },
               ),
-              if (contentTpye == CONTENT_TYPE.BULLET ||
-                  contentTpye == CONTENT_TYPE.TEXT ||
-                  // contentTpye == CONTENT_TYPE.TEXT_BOLD ||
-                  contentTpye == CONTENT_TYPE.URL)
+              if (contentTpye == CONTENT_TYPE.LOCATION)
                 IconSlideAction(
-                  caption: 'Style',
+                  caption: 'Edit',
                   color: Colors.blue,
-                  icon: !controller.hasModify
-                      ? Icons.font_download_rounded
-                      : Icons.check,
-                  onTap: () {
-                    controller.onModify(objId);
+                  icon: Icons.map_sharp,
+                  onTap: () async {
+                    await controller.onEditLocation(objId);
                   },
                 ),
+              // if (contentTpye == CONTENT_TYPE.BULLET ||
+              //     contentTpye == CONTENT_TYPE.TEXT ||
+              //     // contentTpye == CONTENT_TYPE.TEXT_BOLD ||
+              //     contentTpye == CONTENT_TYPE.URL)
+              //   IconSlideAction(
+              //     caption: 'Style',
+              //     color: Colors.blue,
+              //     icon: !controller.hasModify
+              //         ? Icons.font_download_rounded
+              //         : Icons.check,
+              //     onTap: () {
+              //       controller.onModify(objId);
+              //     },
+              //   ),
               if (!controller.hasModify)
                 IconSlideAction(
                   caption: 'Delete',

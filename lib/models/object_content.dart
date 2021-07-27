@@ -8,18 +8,18 @@ import 'package:get/get.dart';
 import 'package:multi_image_picker2/multi_image_picker2.dart';
 import 'package:video_player/video_player.dart';
 
+import 'model_view.dart';
 import 'object_keys.dart';
 
 enum CONTENT_TYPE {
   TEXT,
   BULLET,
-  // TEXT_BOLD,
   URL,
   IMAGE,
   VIDEO,
   LOCATION,
   YOUTUBE,
-  TIKTOK
+  TIKTOK,
 }
 
 class ObjectContent {
@@ -29,12 +29,12 @@ class ObjectContent {
   int? id;
   dynamic data;
   int _currentTextLength = 0;
+  ObjectKeys? objKey;
 
   ObjectContent(this.type, {this.data}) {
     this.id = DateTime.now().microsecondsSinceEpoch;
     if (this.type == CONTENT_TYPE.BULLET ||
         this.type == CONTENT_TYPE.TEXT ||
-        // this.type == CONTENT_TYPE.TEXT_BOLD ||
         this.type == CONTENT_TYPE.URL) {
       textController = TextEditingController(text: data ?? '');
       focusNode = FocusNode(debugLabel: this.id.toString());
@@ -45,15 +45,19 @@ class ObjectContent {
   /// [onSelect] if true is selecting Object.
   /// else is editing layout Object.
   Widget createWidget(bool onSelect, int objId,
-      {ObjectKeys? objKey, int? index}) {
+      {ObjectKeys? objKey, int? index, bool readOnly = false}) {
+    if (objKey != null) {
+      this.objKey = objKey;
+    }
     Widget child = Container();
     switch (type) {
       case CONTENT_TYPE.TEXT:
         child = DefaultTextField(
-          key: objKey!.objKey,
+          key: objKey?.objKey,
           focusNode: focusNode,
           controller: textController,
           textSize: TEXT_SIZE.NORMAL,
+          readOnly: readOnly,
           hintText: 'some text ...',
           onChanged: (value) => data = value,
         );
@@ -64,6 +68,7 @@ class ObjectContent {
           focusNode: focusNode,
           controller: textController,
           textSize: TEXT_SIZE.NORMAL,
+          readOnly: readOnly,
           hintText: '• text',
           onChanged: (newText) {
             //'\u2022 '
@@ -86,16 +91,6 @@ class ObjectContent {
           },
         );
         break;
-      // case CONTENT_TYPE.TEXT_BOLD:
-      //   child = DefaultTextField(
-      //     key: objKey!.objKey,
-      // focusNode: focus,
-      //     controller: textController,
-      //     textSize: TEXT_SIZE.BIG_BOLD,
-      //     hintText: 'some text ...',
-      //     onChanged: (value) => data = value,
-      //   );
-      //   break;
       case CONTENT_TYPE.URL:
         child = DefaultTextField(
           key: objKey!.objKey,
@@ -109,7 +104,7 @@ class ObjectContent {
         break;
       case CONTENT_TYPE.IMAGE:
         child = Container(
-          padding: const EdgeInsets.only(top: 5),
+          padding: const EdgeInsets.symmetric(vertical: 20),
           width: Get.width,
           height: 200,
           child: AssetThumb(
@@ -126,7 +121,7 @@ class ObjectContent {
         final url =
             "https://www.youtube.com/embed/${data.toString().split('/').last}";
         child = Padding(
-          padding: const EdgeInsets.only(top: 5),
+          padding: const EdgeInsets.symmetric(vertical: 20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -145,7 +140,7 @@ class ObjectContent {
         final url = "${data.toString().split('?').first}";
         data = url;
         child = Padding(
-          padding: const EdgeInsets.only(top: 5),
+          padding: const EdgeInsets.symmetric(vertical: 20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -160,48 +155,106 @@ class ObjectContent {
           ),
         );
         break;
+
+      case CONTENT_TYPE.LOCATION:
+        child = Padding(
+          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
+          child: Row(
+            children: [
+              Icon(Icons.pin_drop),
+              SizedBox(width: 10),
+              Expanded(child: Text(data.toString().split("|").first)),
+            ],
+          ),
+        );
+        break;
       default:
-        return Text(data.toString());
+        child = DefaultTextField(
+          key: objKey!.objKey,
+          focusNode: focusNode,
+          controller: textController,
+          textSize: TEXT_SIZE.NORMAL,
+          hintText: 'some text ...',
+          readOnly: readOnly,
+          onChanged: (value) => data = value,
+        );
     }
     return Container(
       child: onSelect
           ? SelectObjectWidget(objId: objId, child: child)
-          : ContentLayout(key: ValueKey(objId), objId: objId, child: child),
+          : ContentLayout(
+              key: ValueKey(objId),
+              type: type,
+              objId: objId,
+              child: child,
+              focusNode: focusNode,
+            ),
     );
   }
 
-  Map<String, dynamic> saveDataObj() {
-    Map<String, dynamic> dataMap = {};
+  KeepData saveDataObj(ObjectKeys? objKey) {
+    // Map<String, dynamic> dataMap = {};
+    Map<String, dynamic> styles = {
+      "Bold": objKey?.textIsBold,
+      "Italic": objKey?.textIsItalic,
+      "Large": objKey?.textIsLarge,
+      "Underline": objKey?.textIsUnderline,
+      "Color": type == CONTENT_TYPE.URL ? "0xFF2196F3" : "",
+    };
+    KeepData keepData = KeepData(
+        id: "$id",
+        rawData: "",
+        type: "TEXT",
+        data: "",
+        styles: (type == CONTENT_TYPE.TEXT ||
+                type == CONTENT_TYPE.BULLET ||
+                type == CONTENT_TYPE.URL)
+            ? Styles.fromJson(styles)
+            : null);
+
     switch (type) {
       case CONTENT_TYPE.TEXT:
-        dataMap.addAll({"TEXT|$id": data});
+        keepData.styles = Styles.fromJson(styles);
+        keepData.data = data;
         break;
       case CONTENT_TYPE.BULLET:
-        dataMap.addAll({"BULLET|$id": data.toString().replaceAll('• ', '')});
+        keepData.type = "BULLET";
+        keepData.data = data.toString().replaceAll('• ', '');
         break;
       case CONTENT_TYPE.URL:
-        dataMap.addAll({"URL|$id": data});
+        keepData.type = "URL";
+        keepData.data = data;
+
         break;
       case CONTENT_TYPE.IMAGE:
-        dataMap.addAll(
-            // {"IMAGE|$id": base64Encode((data as File).readAsBytesSync())}); // For prod
-            {"IMAGE|$id": 'base64'}); // For test
+        keepData.type = "IMAGE";
+        keepData.rawData = (data as Asset);
+        keepData.data = "Base64";
+
         break;
       case CONTENT_TYPE.VIDEO:
-        dataMap.addAll(
-            // {"VIDEO|$id": base64Encode((data as File).readAsBytesSync())}); // For prod
-            {"VIDEO|$id": 'base64'}); // For test
+        keepData.type = "VIDEO";
+        keepData.rawData = data;
+        keepData.data = "Base64";
+        // keepData.rawData = base64Encode((data as File).readAsBytesSync());
+        // {"VIDEO|$id": base64Encode((data as File).readAsBytesSync())}); // For prod
+
         break;
       case CONTENT_TYPE.YOUTUBE:
-        dataMap.addAll({"YOUTUBE|$id": data});
+        keepData.type = "YOUTUBE";
+        keepData.data = data;
         break;
       case CONTENT_TYPE.TIKTOK:
-        dataMap.addAll({"TIKTOK|$id": data});
+        keepData.type = "TIKTOK";
+        keepData.data = data;
+        break;
+      case CONTENT_TYPE.LOCATION:
+        keepData.type = "LOCATION";
+        keepData.data = data;
         break;
 
       default:
-      // return Text(data);
     }
-    return dataMap;
+    return keepData;
   }
 }

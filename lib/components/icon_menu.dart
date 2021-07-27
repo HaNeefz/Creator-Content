@@ -8,8 +8,9 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/route_manager.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:multi_image_picker2/multi_image_picker2.dart';
-import 'package:video_player/video_player.dart';
 // import 'import 'package:multi_image_picker2/multi_image_picker2.dart';';
+import 'package:place_picker/place_picker.dart';
+import 'package:video_player/video_player.dart';
 
 class IconMenu extends StatelessWidget {
   IconMenu({Key? key, this.isInsert = false, this.indexAt}) : super(key: key);
@@ -44,6 +45,12 @@ class IconMenu extends StatelessWidget {
             _iconButton(Icons.add_link_rounded, CONTENT_TYPE.URL),
             _iconButton(FontAwesomeIcons.youtube, CONTENT_TYPE.YOUTUBE),
             _iconButton(FontAwesomeIcons.tiktok, CONTENT_TYPE.TIKTOK),
+          ],
+        ),
+        _iconButtonGroup(
+          title: "Location",
+          children: [
+            _iconButton(Icons.pin_drop, CONTENT_TYPE.LOCATION),
           ],
         ),
       ],
@@ -139,11 +146,11 @@ class IconMenu extends StatelessWidget {
         if (images.isNotEmpty) {
           images.forEach((image) {
             controller.addContent(
-              ObjectContent(type, data: image),
+              ObjectContent(CONTENT_TYPE.TEXT, data: ""),
               index: index,
             );
             controller.addContent(
-              ObjectContent(CONTENT_TYPE.TEXT, data: ""),
+              ObjectContent(type, data: image),
               index: index,
             );
           });
@@ -156,16 +163,16 @@ class IconMenu extends StatelessWidget {
             maxDuration: const Duration(seconds: 10));
         if (pickedFile != null) {
           controller.addContent(
+            ObjectContent(CONTENT_TYPE.TEXT, data: ""),
+            index: index,
+          );
+          controller.addContent(
             ObjectContent(
               type,
               data: VideoPlayerController.file(
                 File(pickedFile.path),
               ),
             ),
-            index: index,
-          );
-          controller.addContent(
-            ObjectContent(CONTENT_TYPE.TEXT, data: ""),
             index: index,
           );
         }
@@ -176,11 +183,11 @@ class IconMenu extends StatelessWidget {
           keyword: 'youtu',
           onConfirm: (text) {
             controller.addContent(
-              ObjectContent(type, data: text),
+              ObjectContent(CONTENT_TYPE.TEXT, data: ""),
               index: index,
             );
             controller.addContent(
-              ObjectContent(CONTENT_TYPE.TEXT, data: ""),
+              ObjectContent(type, data: text),
               index: index,
             );
           },
@@ -192,15 +199,28 @@ class IconMenu extends StatelessWidget {
           keyword: 'tiktok',
           onConfirm: (text) {
             controller.addContent(
-              ObjectContent(type, data: text),
+              ObjectContent(CONTENT_TYPE.TEXT, data: ""),
               index: index,
             );
             controller.addContent(
-              ObjectContent(CONTENT_TYPE.TEXT, data: ""),
+              ObjectContent(type, data: text),
               index: index,
             );
           },
         );
+        break;
+
+      case CONTENT_TYPE.LOCATION:
+        LocationResult? result = await controller.onSelectLocation();
+        if (result != null) {
+          controller.addContent(
+            ObjectContent(type,
+                data:
+                    "${result.formattedAddress}|${result.latLng!.latitude}, ${result.latLng!.longitude}"),
+            index: index,
+          );
+        }
+
         break;
       default:
     }

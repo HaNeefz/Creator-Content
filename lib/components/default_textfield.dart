@@ -1,4 +1,6 @@
+import 'package:creator_content/controllers/controller_content.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 
 enum TEXT_SIZE { NORMAL, NORMAL_BOLD, BIG, BIG_BOLD, BOLD }
 enum TEXT_STYLE { ITALIC, UNDERLINE, LINETHROUGH }
@@ -6,6 +8,7 @@ enum TEXT_STYLE { ITALIC, UNDERLINE, LINETHROUGH }
 // ignore: must_be_immutable
 class DefaultTextField extends StatefulWidget {
   final TextEditingController? controller;
+  int? objId;
   final FocusNode? focusNode;
   final Function(String value)? onChanged;
   final Function()? onTap;
@@ -13,8 +16,11 @@ class DefaultTextField extends StatefulWidget {
   final Color textColor;
   final TEXT_SIZE textSize;
   final Widget? prefixIcon;
+  final bool accessController;
+  final bool readOnly;
   DefaultTextField({
     Key? key,
+    this.objId,
     this.controller,
     this.onChanged,
     this.hintText = '...',
@@ -23,6 +29,8 @@ class DefaultTextField extends StatefulWidget {
     this.textColor = Colors.black,
     this.onTap,
     this.focusNode,
+    this.accessController = true,
+    this.readOnly = false,
   }) : super(key: key);
 
   @override
@@ -44,7 +52,11 @@ class DefaultTextFieldState extends State<DefaultTextField> {
   @override
   void initState() {
     super.initState();
-    setStyle(widget.textSize);
+    SchedulerBinding.instance?.addPostFrameCallback((timeStamp) {
+      final controller = ControllerContent.to;
+      controller.onModify(widget.objId!);
+      setStyle(widget.textSize);
+    });
   }
 
   @override
@@ -56,8 +68,14 @@ class DefaultTextFieldState extends State<DefaultTextField> {
         controller: widget.controller,
         focusNode: widget.focusNode,
         showCursor: true,
+        readOnly: widget.readOnly,
         style: style,
         onTap: () {
+          if (widget.accessController) {
+            debugPrint('Current ObjId : ${widget.objId}');
+            final controller = ControllerContent.to;
+            controller.onModify(widget.objId!);
+          }
           widget.onTap?.call();
         },
         decoration: InputDecoration(

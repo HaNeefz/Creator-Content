@@ -1,11 +1,18 @@
 import 'dart:convert';
 
 import 'package:creator_content/components/default_textfield.dart';
+import 'package:creator_content/config/config.dart';
+import 'package:creator_content/models/model_view.dart';
 import 'package:creator_content/models/object_content.dart';
 import 'package:creator_content/models/object_keys.dart';
+import 'package:creator_content/preview_data.dart';
 import 'package:creator_content/utils/popup.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:place_picker/entities/localization_item.dart';
+import 'package:place_picker/entities/location_result.dart';
+import 'package:place_picker/place_picker.dart';
+import 'package:place_picker/widgets/place_picker.dart';
 
 import '../models/object_content.dart';
 
@@ -22,6 +29,8 @@ class ControllerContent extends GetxController {
   var isSelectedContent = false.obs;
   var isEditLayout = false.obs;
   var isModify = false.obs;
+  var lastTypeObj = CONTENT_TYPE.TEXT.obs;
+  var finalView = false.obs;
 
   @override
   void onInit() {
@@ -46,23 +55,54 @@ class ControllerContent extends GetxController {
 
   bool get hasModify => isModify.value;
 
+  CONTENT_TYPE _getLastTypeObj() {
+    debugPrint(
+        "type : ${contents[contents.length - 1].type}, focus : ${contents[contents.length - 1].focusNode}");
+    return contents[contents.length - 1].type;
+  }
+
+  bool checkLastType() {
+    return _getLastTypeObj() == CONTENT_TYPE.IMAGE ||
+        _getLastTypeObj() == CONTENT_TYPE.TIKTOK ||
+        _getLastTypeObj() == CONTENT_TYPE.VIDEO ||
+        _getLastTypeObj() == CONTENT_TYPE.YOUTUBE;
+  }
+
   ObjectKeys _findKeysByObjId() {
     ObjectKeys key =
         objKeys.firstWhere((_objKeys) => _objKeys.objId == modifyIndexAt.value);
     return key;
   }
 
+  void setModifyAt(objId) => modifyIndexAt(objId);
+
   setCurrentStyleObj(ObjectKeys objStyle) {
     currentStyleObject.value.objId = objStyle.objId;
     currentStyleObject.value.objKey = objStyle.objKey;
-    currentStyleObject.value.textIsLarge = objStyle.objKey.currentState!.large;
-    currentStyleObject.value.textIsBold = objStyle.objKey.currentState!.bold;
+    currentStyleObject.value.textIsLarge = objStyle.objKey.currentState?.large;
+    currentStyleObject.value.textIsBold = objStyle.objKey.currentState?.bold;
     currentStyleObject.value.textIsItalic =
-        objStyle.objKey.currentState!.italic;
+        objStyle.objKey.currentState?.italic;
     currentStyleObject.value.textIsUnderline =
-        objStyle.objKey.currentState!.underline;
-    currentStyleObject.update((val) {});
-    currentStyleObject.value.printValue();
+        objStyle.objKey.currentState?.underline;
+    currentStyleObject.update((val) {
+      // debugPrint("ObjId : ${val?.objId}");
+      // debugPrint("textIsBold : ${val?.textIsBold}");
+      // debugPrint("textIsItalic : ${val?.textIsItalic}");
+      // debugPrint("textIsLarge : ${val?.textIsLarge}");
+      // debugPrint("textIsUnderline : ${val?.textIsUnderline}");
+      // debugPrint("-----------------");
+      objKeys
+          .firstWhere(
+              (element) => element.objId == currentStyleObject.value.objId)
+          .setStyle(
+            isBold: val?.textIsBold ?? false,
+            isItalic: val?.textIsItalic ?? false,
+            isLarge: val?.textIsLarge ?? false,
+            isUnderline: val?.textIsUnderline ?? false,
+          );
+    });
+    // currentStyleObject.value.printValue();
   }
 
   void setBigText() {
@@ -112,16 +152,23 @@ class ControllerContent extends GetxController {
     return currentStyleObject.value.textIsUnderline ?? false;
   }
 
+  bool hasInput() => contents.any((obj) =>
+      obj.type == CONTENT_TYPE.BULLET ||
+      obj.type == CONTENT_TYPE.TEXT ||
+      obj.type == CONTENT_TYPE.URL);
+
   void confirmEditUI() {
     if (isEditLayout.value)
       onEditContent();
     else if (isSelectedContent.value)
       onSelectedObject();
     else
-      onSaveData();
+      gotoPreviewPage();
   }
 
   void addContent(ObjectContent objContent, {int? index}) {
+    //Calculator c = Calculator();
+
     if (index == null)
       contents.add(objContent);
     else {
@@ -137,6 +184,7 @@ class ControllerContent extends GetxController {
     ));
     lastFocus(objContent.focusNode);
     debugPrint('addContent obj.focus = ${lastFocus.value.debugLabel}');
+    lastTypeObj(objContent.type);
     // }
   }
 
@@ -152,8 +200,10 @@ class ControllerContent extends GetxController {
       'Are you sure delete.',
       onConfirm: () {
         selectedContent.forEach((objId) {
-          contents.removeWhere((obj) => objId == obj.id);
+          contents.removeWhere((obj) => obj.id == objId);
+          objKeys.removeWhere((obj) => obj.objId == objId);
         });
+
         selectedContent.clear();
         _checkCompletedOnEdit();
       },
@@ -161,10 +211,24 @@ class ControllerContent extends GetxController {
   }
 
   void _checkCompletedOnEdit() {
-    if (contents.length == 0 && isEditLayout.value) isEditLayout.toggle();
+    if (contents.length == 0 && isEditLayout.value) {
+      isEditLayout.toggle();
+    }
+    // onSelectedObject();
   }
 
   void removeContentAt(int index) {
+    int _index = index;
+    if (_index-- > 0) {
+      onModify(objKeys
+          .firstWhere((objKey) => objKey.objId == contents[_index].id)
+          .objId);
+    } else {
+      onModify(objKeys
+          .firstWhere((objKey) => objKey.objId == contents[index].id)
+          .objId);
+    }
+    objKeys.removeAt(index);
     contents.removeAt(index);
     _checkCompletedOnEdit();
   }
@@ -207,7 +271,6 @@ class ControllerContent extends GetxController {
   }
 
   onModify([int? objId]) {
-    isModify.toggle();
     if (objId != null) {
       modifyIndexAt(objId);
       setCurrentStyleObj(_findKeysByObjId());
@@ -219,25 +282,75 @@ class ControllerContent extends GetxController {
     lastFocus(contents.firstWhere((obj) => obj.id == objId).focusNode);
   }
 
-  onSaveData() {
-    Map<String, dynamic> temp = {};
-    contents.forEach((element) {
-      temp.addAll(element.saveDataObj());
-    });
-    // var _temp = jsonEncode(temp);
-    JsonEncoder encoder = JsonEncoder.withIndent(" ");
-    String prettyprint = encoder.convert(temp);
-    debugPrint(prettyprint);
-    print(prettyprint);
+  Future<LocationResult?> onSelectLocation([String? latlong]) async {
+    LocationResult? result;
+    try {
+      result = await Get.to(() => PlacePicker(
+            AppConfig.geoApiKey,
+            displayLocation: latlong != null
+                ? LatLng(double.parse(latlong.split(',').first),
+                    double.parse(latlong.split(',')[1]))
+                : null,
+            localizationItem: LocalizationItem(
+                languageCode: 'th',
+                tapToSelectLocation: "กดเพื่อเลือก",
+                nearBy: "สถานที่ใกล้คุณ"),
+          ));
+      // debugPrint("formattedAddress : ${result.formattedAddress}");
+      // debugPrint("latLng : ${result.latLng}");
+      // debugPrint("name : ${result.name}");
+      return result;
+    } catch (e) {
+      Popup.error('Error Select location : $e');
+      return null;
+    }
+  }
 
-    Get.defaultDialog(
-      title: "Sendind data",
+  onEditLocation(int obj) async {
+    var tempObj = contents.firstWhere((element) => element.id == obj);
+    String latlong = tempObj.data;
+    LocationResult? result = await onSelectLocation(latlong.split("|")[1]);
+    if (result != null) {
+      int index = contents.indexOf(tempObj);
+      var _obj = contents.removeAt(index);
+      _obj.data =
+          "${result.formattedAddress}|${result.latLng?.latitude}, ${result.latLng?.longitude}";
+      contents.insert(index, _obj);
+    }
+  }
+
+  gotoPreviewPage() => Get.to(() => PreviewData());
+
+  List<KeepData> popData() {
+    List<KeepData> temp = [];
+    debugPrint('contents : ${contents.length}');
+    for (var item in contents) {
+      int index = contents.indexOf(item);
+      temp.add(item.saveDataObj(objKeys[index]));
+    }
+
+    return temp;
+  }
+
+  showData() {
+    List<KeepData> temp = [];
+    JsonEncoder encoder = JsonEncoder.withIndent(" ");
+    for (var item in contents) {
+      int index = contents.indexOf(item);
+      temp.add(item.saveDataObj(objKeys[index]));
+    }
+    Get.dialog(AlertDialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       content: SingleChildScrollView(
-        child: Text(
-          prettyprint,
-          style: TextStyle(fontSize: 14),
+        child: Column(
+          children: [
+            Text(
+              "${temp.map((e) => encoder.convert(e.toJson())).toList()}",
+              style: TextStyle(fontSize: 14),
+            ),
+          ],
         ),
       ),
-    );
+    ));
   }
 }

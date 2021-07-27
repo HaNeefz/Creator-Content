@@ -1,4 +1,5 @@
 import 'package:creator_content/components/slidable_widget.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -69,8 +70,14 @@ class MyHomePage extends StatelessWidget {
                 TextToolsBar(),
                 Expanded(
                     child: ReorderableListView(
-                  // keyboardDismissBehavior:
-                  //     ScrollViewKeyboardDismissBehavior.onDrag,
+                  physics: ClampingScrollPhysics(),
+                  shrinkWrap: true,
+                  dragStartBehavior: DragStartBehavior.down,
+                  proxyDecorator: (child, _, animated) {
+                    return FocusDragWidget(
+                      child: child,
+                    );
+                  },
                   buildDefaultDragHandles: controller.isEditLayout.value,
                   children: [
                     ...controller.contents.map((data) {
@@ -97,6 +104,34 @@ class MyHomePage extends StatelessWidget {
               ],
             )),
         floatingActionButton: ButtonAddContent(),
+      ),
+    );
+  }
+}
+
+class FocusDragWidget extends StatelessWidget {
+  final Widget child;
+  const FocusDragWidget({
+    Key? key,
+    required this.child,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              blurRadius: 5,
+              spreadRadius: 5,
+              color: Colors.blueGrey,
+              offset: Offset(0, 2.5),
+            ),
+          ],
+        ),
+        child: Material(child: child),
       ),
     );
   }

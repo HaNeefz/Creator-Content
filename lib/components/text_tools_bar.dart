@@ -10,82 +10,93 @@ class TextToolsBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = ControllerContent.to;
-    return Obx(() => controller.hasModify
-        ? Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              Expanded(
-                child: activeStyle(
-                  child: IconButton(
-                    icon: Icon(
-                      Icons.text_format_rounded,
-                      size: 20,
-                    ),
-                    onPressed: () => controller.setNormalText(),
-                  ),
-                  active: !controller.getTextIsLarge(),
+    return Obx(
+        // () => controller.hasModify ? showButtons(controller) : Container());
+
+        () {
+      if (controller.contents.length > 0 &&
+          controller.hasInput() &&
+          !(controller.isSelectedContent.value))
+        return showButtons(controller);
+      else
+        return Container();
+    });
+  }
+
+  Row showButtons(ControllerContent controller) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        Expanded(
+          child: activeStyle(
+            child: IconButton(
+              icon: Icon(
+                Icons.text_format_rounded,
+                size: 20,
+              ),
+              onPressed: () => controller.setNormalText(),
+            ),
+            active: !controller.getTextIsLarge(),
+          ),
+        ),
+        Expanded(
+          child: activeStyle(
+            child: IconButton(
+              icon: Icon(
+                Icons.text_format_rounded,
+              ),
+              onPressed: () => controller.setBigText(),
+            ),
+            active: controller.getTextIsLarge(),
+          ),
+        ),
+        Expanded(
+          child: activeStyle(
+              child: IconButton(
+                icon: Icon(
+                  Icons.format_bold_rounded,
                 ),
+                onPressed: () => controller.setBoldText(),
               ),
-              Expanded(
-                child: activeStyle(
-                  child: IconButton(
-                    icon: Icon(
-                      Icons.text_format_rounded,
-                    ),
-                    onPressed: () => controller.setBigText(),
-                  ),
-                  active: controller.getTextIsLarge(),
+              active: controller.getTextIsBold()),
+        ),
+        Expanded(
+          child: activeStyle(
+              child: IconButton(
+                icon: Icon(
+                  Icons.format_italic_rounded,
                 ),
+                onPressed: () => controller.setItalicText(),
               ),
-              Expanded(
-                child: activeStyle(
-                    child: IconButton(
-                      icon: Icon(
-                        Icons.format_bold_rounded,
-                      ),
-                      onPressed: () => controller.setBoldText(),
-                    ),
-                    active: controller.getTextIsBold()),
-              ),
-              Expanded(
-                child: activeStyle(
-                    child: IconButton(
-                      icon: Icon(
-                        Icons.format_italic_rounded,
-                      ),
-                      onPressed: () => controller.setItalicText(),
-                    ),
-                    active: controller.getTextIsItalic()),
-              ),
-              Expanded(
-                child: activeStyle(
-                    child: IconButton(
-                      icon: Icon(
-                        Icons.format_underline_rounded,
-                      ),
-                      onPressed: () => controller.setUnderlineText(),
-                    ),
-                    active: controller.getTextIsUnderline()),
-              ),
-              Expanded(
-                child: Container(
-                  margin: const EdgeInsets.all(3),
-                  decoration: BoxDecoration(
-                      color: Colors.red,
-                      borderRadius: BorderRadius.circular(3)),
-                  child: IconButton(
-                    icon: Icon(Icons.check, color: Colors.white),
-                    onPressed: () => controller.onModify(),
-                  ),
+              active: controller.getTextIsItalic()),
+        ),
+        Expanded(
+          child: activeStyle(
+              child: IconButton(
+                icon: Icon(
+                  Icons.format_underline_rounded,
                 ),
+                onPressed: () => controller.setUnderlineText(),
               ),
-            ],
-          )
-        : Container());
+              active: controller.getTextIsUnderline()),
+        ),
+        // Expanded(
+        //   child: Container(
+        //     margin: const EdgeInsets.all(3),
+        //     decoration: BoxDecoration(
+        //         color: Colors.red, borderRadius: BorderRadius.circular(3)),
+        //     child: IconButton(
+        //       icon: Icon(Icons.check, color: Colors.white),
+        //       onPressed: () => controller.onModify(),
+        //     ),
+        //   ),
+        // ),
+      ],
+    );
   }
 
   Widget activeStyle({required Widget child, bool active = false}) {
-    debugPrint('active : $active');
+    // debugPrint('active : $active');
     return Container(
         decoration: BoxDecoration(
             color: active ? Colors.grey : Colors.transparent,

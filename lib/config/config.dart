@@ -20,7 +20,7 @@ class AppConfig {
   }
 
   // static get baseUrl => _config[_Config.YDCMEMBER_URL];
-  // static get geoApiKey => _config[_Config.GMS_API_KEY];
+  static get geoApiKey => _config![_Config.GMS_API_KEY];
   // static get apiKey => _config[_Config.API_KEY];
   // static get gmsKey => _config[_Config.GMS_API_KEY];
   // static get adAppIDiOS => _config[_Config.AD_APP_ID_IOS];
@@ -31,12 +31,15 @@ class AppConfig {
 
 class _Config {
   static const Env = "Environment";
+  static const GMS_API_KEY = "GMS_API_KEY";
 
   static Map<String, dynamic> devConstants = {
     Env: Environment.DEV,
+    GMS_API_KEY: "AIzaSyBMX0xzpmfSLZc-Ze_pfCf8gsNCGD_y25o"
   };
 
   static Map<String, dynamic> prodConstants = {
     Env: Environment.PROD,
+    GMS_API_KEY: "AIzaSyBMX0xzpmfSLZc-Ze_pfCf8gsNCGD_y25o"
   };
 }
