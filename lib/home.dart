@@ -19,7 +19,7 @@ class MyHomePage extends StatelessWidget {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: Text('Creator content'),
+          title: Text('Content Creator'),
           leading: Obx(() {
             if (controller.isSelectedContent.value)
               return Padding(

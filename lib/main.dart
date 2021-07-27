@@ -6,7 +6,7 @@ import 'home.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  AppConfig.setEnvironment(Environment.DEV);
+  AppConfig.setEnvironment(Environment.PROD);
   runApp(MyApp());
 }
 
@@ -14,7 +14,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
-        title: 'Creator content',
+        title: 'Content Creator',
         theme: ThemeData(
           primarySwatch: Colors.blue,
         ),
