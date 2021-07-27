@@ -6,7 +6,7 @@ import 'home.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  AppConfig.setEnvironment(Environment.PROD);
+  AppConfig.setEnvironment(Environment.DEV);
   runApp(MyApp());
 }
 

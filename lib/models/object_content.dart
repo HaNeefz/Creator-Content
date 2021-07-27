@@ -219,7 +219,7 @@ class ObjectContent {
         break;
       case CONTENT_TYPE.BULLET:
         keepData.type = "BULLET";
-        keepData.data = data.toString().replaceAll('• ', '');
+        keepData.data = data.toString();
         break;
       case CONTENT_TYPE.URL:
         keepData.type = "URL";

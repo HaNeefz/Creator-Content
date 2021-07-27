@@ -58,10 +58,10 @@ class KeepData {
 }
 
 class Styles {
-  bool? bold;
-  bool? italic;
-  bool? large;
-  bool? underline;
+  late bool bold;
+  late bool italic;
+  late bool large;
+  late bool underline;
   String? color;
 
   Styles(
@@ -72,11 +72,11 @@ class Styles {
       this.color});
 
   Styles.fromJson(Map<String, dynamic> json) {
-    bold = json['Bold'];
-    italic = json['Italic'];
-    large = json['Large'];
-    underline = json['Underline'];
-    color = json['Color'];
+    bold = json['Bold'] ?? false;
+    italic = json['Italic'] ?? false;
+    large = json['Large'] ?? false;
+    underline = json['Underline'] ?? false;
+    color = json['Color'] ?? false;
   }
 
   Map<String, dynamic> toJson() {

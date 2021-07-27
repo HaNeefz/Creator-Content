@@ -8,6 +8,7 @@ import 'package:multi_image_picker2/multi_image_picker2.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:video_player/video_player.dart';
 
+import 'components/photo_views_widget.dart';
 import 'components/video_player_widget.dart';
 import 'components/webview_tool.dart';
 import 'models/model_view.dart';
@@ -25,7 +26,7 @@ class PreviewData extends StatelessWidget {
         actions: [
           TextButton(
             child: Text(
-              'Show Data',
+              'Raw Data',
               style: TextStyle(color: Colors.white),
             ),
             onPressed: () {
@@ -53,24 +54,24 @@ class PreviewData extends StatelessWidget {
       case "TEXT":
       case "BULLET":
         style = style.copyWith(
-          fontSize: keepData.styles!.large! ? 22 : 18,
+          fontSize: keepData.styles!.large ? 22 : 18,
           fontWeight:
-              keepData.styles!.bold! ? FontWeight.bold : FontWeight.normal,
+              keepData.styles!.bold ? FontWeight.bold : FontWeight.normal,
           fontStyle:
-              keepData.styles!.italic! ? FontStyle.italic : FontStyle.normal,
+              keepData.styles!.italic ? FontStyle.italic : FontStyle.normal,
           decoration:
-              keepData.styles!.underline! ? TextDecoration.underline : null,
+              keepData.styles!.underline ? TextDecoration.underline : null,
         );
         break;
       case "URL":
         style = style.copyWith(
-          fontSize: keepData.styles!.large! ? 22 : 18,
+          fontSize: keepData.styles!.large ? 22 : 18,
           fontWeight:
-              keepData.styles!.bold! ? FontWeight.bold : FontWeight.normal,
+              keepData.styles!.bold ? FontWeight.bold : FontWeight.normal,
           fontStyle:
-              keepData.styles!.italic! ? FontStyle.italic : FontStyle.normal,
+              keepData.styles!.italic ? FontStyle.italic : FontStyle.normal,
           decoration:
-              keepData.styles!.underline! ? TextDecoration.underline : null,
+              keepData.styles!.underline ? TextDecoration.underline : null,
           color: Colors.blue,
         );
         break;
@@ -117,15 +118,23 @@ class PreviewData extends StatelessWidget {
         );
         break;
       case "IMAGE":
-        child = Container(
-          padding: const EdgeInsets.symmetric(vertical: 20),
-          width: Get.width,
-          height: 200,
-          child: AssetThumb(
-            asset: (keepData.rawData as Asset),
-            width: Get.width.toInt(),
+        child = GestureDetector(
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 20),
+            width: Get.width,
             height: 200,
+            child: AssetThumb(
+              asset: (keepData.rawData as Asset),
+              width: Get.width.toInt(),
+              height: 200,
+            ),
           ),
+          onTap: () async {
+            final image = await (keepData.rawData as Asset).getByteData();
+            Get.to(() => PhotoViewWidget(
+                  image: image.buffer.asUint8List(),
+                ));
+          },
         );
         break;
       case "VIDEO":
@@ -174,13 +183,26 @@ class PreviewData extends StatelessWidget {
       case "LOCATION":
         child = Padding(
           padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
-          child: Row(
-            children: [
-              Icon(Icons.pin_drop),
-              SizedBox(width: 10),
-              Expanded(
-                  child: Text(keepData.rawData.toString().split("|").first)),
-            ],
+          child: GestureDetector(
+            child: Row(
+              children: [
+                Icon(Icons.pin_drop),
+                SizedBox(width: 10),
+                Expanded(
+                    child: Text(keepData.data.toString().split("|").first)),
+              ],
+            ),
+            onTap: () async {
+              String latlong =
+                  keepData.data.toString().split("|")[1].replaceAll(", ", ",");
+              String url =
+                  'https://www.google.com/maps/search/?api=1&query=$latlong';
+
+              if (await canLaunch(url))
+                await launch(url);
+              else
+                throw "Can't launch";
+            },
           ),
         );
         break;

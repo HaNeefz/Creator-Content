@@ -27,12 +27,20 @@ class _ContentLayoutState extends State<ContentLayout> {
   @override
   void initState() {
     SchedulerBinding.instance!.addPostFrameCallback((timeStamp) {
-      if (!controller.finalView.value) {
-        if (widget.focusNode != controller.lastFocus.value) {
+      // ถ้าไม่ได้เเก้ไข layout
+      if (!controller.isEditLayout.value) {
+        if (!controller.finalView.value) {
+          if (widget.focusNode != controller.lastFocus.value) {
+            FocusScope.of(context).unfocus();
+          } else if (FocusScope.of(context).canRequestFocus) {
+            FocusScope.of(context).requestFocus(controller.lastFocus.value);
+            controller.onModify(widget.objId);
+          }
+        }
+      } else {
+        // ถ้ากดเเก้ไข layout เเล้วมีการ focus ที่ TextField อยู่ ให้ทำการ unfocus.
+        if (FocusScope.of(context).hasFocus) {
           FocusScope.of(context).unfocus();
-        } else if (FocusScope.of(context).canRequestFocus) {
-          FocusScope.of(context).requestFocus(controller.lastFocus.value);
-          controller.onModify(widget.objId);
         }
       }
     });
@@ -49,14 +57,14 @@ class _ContentLayoutState extends State<ContentLayout> {
       child: Obx(() => Row(
             children: [
               Expanded(
-                // child:
-                // IgnorePointer(
-                //   ignoring: controller.isEditLayout.value ||
-                //       (controller.hasModify &&
-                //           widget.objId != controller.modifyIndexAt.value),
-                //   child: widget.child,
-                // ),
-                child: widget.child,
+                child: IgnorePointer(
+                  ignoring: controller.isEditLayout.value,
+                  // ignoring: controller.isEditLayout.value ||
+                  //     (controller.hasModify &&
+                  //         widget.objId != controller.modifyIndexAt.value),
+                  child: widget.child,
+                ),
+                // child: widget.child,
               ),
               if (controller.isEditLayout.value)
                 Container(
