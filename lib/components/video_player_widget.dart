@@ -63,7 +63,6 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.only(top: 5),
       color: Colors.black,
       height: 200,
       child: _chewieController != null

@@ -1,9 +1,11 @@
+import 'package:creator_content/components/layout_objects/constant.dart';
 import 'package:creator_content/controllers/controller_content.dart';
+import 'package:creator_content/themes/color_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 
 enum TEXT_SIZE { NORMAL, NORMAL_BOLD, BIG, BIG_BOLD, BOLD }
-enum TEXT_STYLE { ITALIC, UNDERLINE, LINETHROUGH }
+enum TEXT_STYLE { ITALIC, UNDERLINE, LINETHROUGH, COLOR }
 
 // ignore: must_be_immutable
 class DefaultTextField extends StatefulWidget {
@@ -37,32 +39,37 @@ class DefaultTextField extends StatefulWidget {
   DefaultTextFieldState createState() => DefaultTextFieldState();
 }
 
-class DefaultTextFieldState extends State<DefaultTextField> {
+class DefaultTextFieldState extends State<DefaultTextField>
+    with AutomaticKeepAliveClientMixin {
   TextStyle? style;
   bool _italic = false;
   bool _underline = false;
   bool _bold = false;
   bool _large = false;
+  Color _color = ColorConstant.black;
 
   bool get large => _large;
   bool get underline => _underline;
   bool get italic => _italic;
   bool get bold => _bold;
+  Color get color => _color;
 
   @override
   void initState() {
     super.initState();
     SchedulerBinding.instance?.addPostFrameCallback((timeStamp) {
       final controller = ControllerContent.to;
-      controller.onModify(widget.objId!);
+      if (widget.objId != null) controller.onModify(widget.objId);
       setStyle(widget.textSize);
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 10.0, right: 10.0),
+    super.build(context);
+    return Container(
+      margin: const EdgeInsets.symmetric(
+          horizontal: LayoutConstant.paddingHorizontal),
       child: TextField(
         autofocus: true,
         controller: widget.controller,
@@ -74,16 +81,18 @@ class DefaultTextFieldState extends State<DefaultTextField> {
           if (widget.accessController) {
             debugPrint('Current ObjId : ${widget.objId}');
             final controller = ControllerContent.to;
-            controller.onModify(widget.objId!);
+            if (widget.objId != null) controller.onModify(widget.objId);
           }
           widget.onTap?.call();
         },
         decoration: InputDecoration(
-            focusedBorder: UnderlineInputBorder(),
-            prefixIcon: widget.prefixIcon,
-            border: InputBorder.none,
-            hintText: widget.hintText,
-            contentPadding: const EdgeInsets.all(8)),
+          focusedBorder: UnderlineInputBorder(),
+          prefixIcon: widget.prefixIcon,
+          border: InputBorder.none,
+          hintText: widget.hintText,
+          contentPadding: const EdgeInsets.symmetric(
+              horizontal: LayoutConstant.paddingHorizontal),
+        ),
         minLines: null,
         maxLines: null,
         textInputAction: TextInputAction.newline,
@@ -130,7 +139,8 @@ class DefaultTextFieldState extends State<DefaultTextField> {
     setState(() {});
   }
 
-  changeTextDecoration(TEXT_STYLE styleDecoration) {
+  changeTextDecoration(TEXT_STYLE styleDecoration,
+      {Color color = ColorConstant.black}) {
     switch (styleDecoration) {
       case TEXT_STYLE.ITALIC:
         if (!_italic)
@@ -149,8 +159,15 @@ class DefaultTextFieldState extends State<DefaultTextField> {
         _underline = !_underline;
 
         break;
+      case TEXT_STYLE.COLOR:
+        _color = color;
+        style = style!.copyWith(color: _color);
+        break;
       default:
     }
     setState(() {});
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }

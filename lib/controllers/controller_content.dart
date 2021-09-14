@@ -5,7 +5,8 @@ import 'package:creator_content/config/config.dart';
 import 'package:creator_content/models/model_view.dart';
 import 'package:creator_content/models/object_content.dart';
 import 'package:creator_content/models/object_keys.dart';
-import 'package:creator_content/preview_data.dart';
+import 'package:creator_content/pages/preview_data.dart';
+import 'package:creator_content/themes/color_constants.dart';
 import 'package:creator_content/utils/popup.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -31,6 +32,8 @@ class ControllerContent extends GetxController {
   var isModify = false.obs;
   var lastTypeObj = CONTENT_TYPE.TEXT.obs;
   var finalView = false.obs;
+  var loadingImages = false.obs;
+  var periodsDate = <ShowDateTime>{}.obs;
 
   @override
   void onInit() {
@@ -40,6 +43,10 @@ class ControllerContent extends GetxController {
   @override
   void onReady() {
     super.onReady();
+  }
+
+  void setLoadingImages() {
+    loadingImages.toggle();
   }
 
   bool get hasContent => contents.length > 1;
@@ -85,24 +92,17 @@ class ControllerContent extends GetxController {
         objStyle.objKey.currentState?.italic;
     currentStyleObject.value.textIsUnderline =
         objStyle.objKey.currentState?.underline;
+    currentStyleObject.value.color = objStyle.objKey.currentState?.color;
+
+    var objKey = objKeys[objKeys.indexOf(objStyle)];
     currentStyleObject.update((val) {
-      // debugPrint("ObjId : ${val?.objId}");
-      // debugPrint("textIsBold : ${val?.textIsBold}");
-      // debugPrint("textIsItalic : ${val?.textIsItalic}");
-      // debugPrint("textIsLarge : ${val?.textIsLarge}");
-      // debugPrint("textIsUnderline : ${val?.textIsUnderline}");
-      // debugPrint("-----------------");
-      objKeys
-          .firstWhere(
-              (element) => element.objId == currentStyleObject.value.objId)
-          .setStyle(
-            isBold: val?.textIsBold ?? false,
-            isItalic: val?.textIsItalic ?? false,
-            isLarge: val?.textIsLarge ?? false,
-            isUnderline: val?.textIsUnderline ?? false,
-          );
+      objKey.setStyle(
+          isBold: val?.textIsBold ?? false,
+          isItalic: val?.textIsItalic ?? false,
+          isLarge: val?.textIsLarge ?? false,
+          isUnderline: val?.textIsUnderline ?? false,
+          color: val?.color ?? ColorConstant.black);
     });
-    // currentStyleObject.value.printValue();
   }
 
   void setBigText() {
@@ -136,6 +136,16 @@ class ControllerContent extends GetxController {
     setCurrentStyleObj(_findKeysByObjId());
   }
 
+  void setColorText(Color color) {
+    _findKeysByObjId()
+        .objKey
+        .currentState!
+        .changeTextDecoration(TEXT_STYLE.COLOR, color: color);
+    setCurrentStyleObj(_findKeysByObjId());
+  }
+
+  Color getTextColor() => currentStyleObject.value.color ?? ColorConstant.black;
+
   bool getTextIsLarge() {
     return currentStyleObject.value.textIsLarge ?? false;
   }
@@ -164,6 +174,7 @@ class ControllerContent extends GetxController {
       onSelectedObject();
     else
       gotoPreviewPage();
+    // previewData();
   }
 
   void addContent(ObjectContent objContent, {int? index}) {
@@ -211,6 +222,8 @@ class ControllerContent extends GetxController {
   }
 
   void _checkCompletedOnEdit() {
+    debugPrint('contents.length : ${contents.length}');
+    debugPrint('isEditLayout.value : ${isEditLayout.value}');
     if (contents.length == 0 && isEditLayout.value) {
       isEditLayout.toggle();
     }
@@ -267,7 +280,9 @@ class ControllerContent extends GetxController {
       newIndex -= 1;
     }
     final ObjectContent item = contents.removeAt(oldIndex);
+    final ObjectKeys keepData = objKeys.removeAt(oldIndex);
     contents.insert(newIndex, item);
+    objKeys.insert(newIndex, keepData);
   }
 
   onModify([int? objId]) {
@@ -280,6 +295,11 @@ class ControllerContent extends GetxController {
 
   setNewFocus(int objId) {
     lastFocus(contents.firstWhere((obj) => obj.id == objId).focusNode);
+  }
+
+  onUpdateTextHtml(int index, String data) {
+    contents[index].data = data;
+    contents.refresh();
   }
 
   Future<LocationResult?> onSelectLocation([String? latlong]) async {
@@ -319,25 +339,70 @@ class ControllerContent extends GetxController {
     }
   }
 
-  gotoPreviewPage() => Get.to(() => PreviewData());
+  gotoPreviewPage() {
+    previewData();
+    Get.to(() => PreviewData());
+  }
 
   List<KeepData> popData() {
     List<KeepData> temp = [];
-    debugPrint('contents : ${contents.length}');
     for (var item in contents) {
+      periodsDate.add(ShowDateTime(item.createDate));
       int index = contents.indexOf(item);
-      temp.add(item.saveDataObj(objKeys[index]));
+      temp.add(item.saveDataObj(objKeys[index], item.createDate));
     }
 
     return temp;
   }
+
+  previewData({List<String> rangDate = const []}) {
+    clearDataPreview();
+    Set<String> listDate = {};
+    for (var date in contents) {
+      listDate.add(date.createDate.split(' ').first);
+    }
+    if (rangDate.length > 0) {
+      for (var date in rangDate) {
+        listDate.add(date);
+      }
+      listDate.toList().sort();
+    }
+
+    debugPrint('listDate : ${listDate.length}');
+    listDate.forEach((element) {
+      debugPrint('date : $element');
+    });
+    if (rangDate.length == 0) {
+      for (var item in contents) {
+        var temp = <KeepData>[];
+        int index = contents.indexOf(item);
+        if (listDate.contains(item.createDate.split(' ').first)) {
+          temp.add(item.saveDataObj(objKeys[index], item.createDate));
+        }
+        periodsDate
+            .add(ShowDateTime(item.createDate.split(' ').first, item: temp));
+      }
+    } else {
+      for (var item in contents) {
+        var temp = <KeepData>[];
+        int index = contents.indexOf(item);
+        if (rangDate.contains(item.createDate.split(' ').first)) {
+          temp.add(item.saveDataObj(objKeys[index], item.createDate));
+          periodsDate
+              .add(ShowDateTime(item.createDate.split(' ').first, item: temp));
+        }
+      }
+    }
+  }
+
+  clearDataPreview() => periodsDate.clear();
 
   showData() {
     List<KeepData> temp = [];
     JsonEncoder encoder = JsonEncoder.withIndent(" ");
     for (var item in contents) {
       int index = contents.indexOf(item);
-      temp.add(item.saveDataObj(objKeys[index]));
+      temp.add(item.saveDataObj(objKeys[index], item.createDate));
     }
     Get.dialog(AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),

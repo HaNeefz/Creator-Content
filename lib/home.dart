@@ -60,10 +60,18 @@ class MyHomePage extends StatelessWidget {
                         : Icons.check),
                     onPressed: controller.confirmEditUI,
                   ),
+                  // IconButton(
+                  //   icon: Icon(Icons.gps_off),
+                  //   onPressed: () async {
+                  //     var result = await Get.to(() => HtmlEditorExample());
+                  //     debugPrint('result : $result');
+                  //   },
+                  // )
                 ],
               ),
-            )
+            ),
           ],
+          elevation: 0.0,
         ),
         body: Obx(() => Column(
               children: [

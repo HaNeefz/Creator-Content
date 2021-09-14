@@ -1,12 +1,18 @@
 import 'package:creator_content/components/checkbox_content.dart';
 import 'package:creator_content/components/content_layout.dart';
 import 'package:creator_content/components/default_textfield.dart';
-import 'package:creator_content/components/video_player_widget.dart';
-import 'package:creator_content/components/webview_tool.dart';
+import 'package:creator_content/components/layout_objects/layout_image.dart';
+import 'package:creator_content/components/layout_objects/layout_location.dart';
+import 'package:creator_content/components/layout_objects/layout_video.dart';
+import 'package:creator_content/components/layout_objects/layout_view_html.dart';
+import 'package:creator_content/components/layout_objects/layout_webview.dart';
+import 'package:creator_content/controllers/controller_content.dart';
+import 'package:creator_content/themes/color_constants.dart';
+import 'package:creator_content/utils/content_types.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:html_editor_enhanced/html_editor.dart';
+// import 'package:html_editor_enhanced/html_editor.dart';
 import 'package:multi_image_picker2/multi_image_picker2.dart';
-import 'package:video_player/video_player.dart';
 
 import 'model_view.dart';
 import 'object_keys.dart';
@@ -15,16 +21,23 @@ enum CONTENT_TYPE {
   TEXT,
   BULLET,
   URL,
+  TEXT_HTML,
   IMAGE,
   VIDEO,
   LOCATION,
   YOUTUBE,
   TIKTOK,
+  TWITTER,
+  INSTAGRAM,
 }
 
 class ObjectContent {
   final CONTENT_TYPE type;
   late TextEditingController textController;
+  late HtmlEditorController htmlController;
+  late String createDate;
+  String? hashTag;
+  // late HtmlEditorController htmlController;
   FocusNode? focusNode;
   int? id;
   dynamic data;
@@ -33,12 +46,27 @@ class ObjectContent {
 
   ObjectContent(this.type, {this.data}) {
     this.id = DateTime.now().microsecondsSinceEpoch;
+    // this.createDate = DateTime.now().toString();
+    final controller = ControllerContent.to;
+    debugPrint('controller : ${controller.contents.length}');
+
+    if (controller.contents.length == 0)
+      this.createDate = DateTime.now().toString();
+    else
+      this.createDate = DateTime.now()
+          .subtract(Duration(days: controller.contents.length))
+          .toString();
     if (this.type == CONTENT_TYPE.BULLET ||
-        this.type == CONTENT_TYPE.TEXT ||
-        this.type == CONTENT_TYPE.URL) {
+            this.type == CONTENT_TYPE.TEXT ||
+            this.type == CONTENT_TYPE.URL
+        // ||this.type == CONTENT_TYPE.TEXT_HTML
+        ) {
+      // htmlController = HtmlEditorController();
       textController = TextEditingController(text: data ?? '');
       focusNode = FocusNode(debugLabel: this.id.toString());
       debugPrint("create focusNode : ${focusNode!.debugLabel}");
+    } else if (this.type == CONTENT_TYPE.TEXT_HTML) {
+      htmlController = HtmlEditorController();
     }
   }
 
@@ -91,6 +119,14 @@ class ObjectContent {
           },
         );
         break;
+      case CONTENT_TYPE.TEXT_HTML:
+        child = ViewHtml(
+          html: data,
+          index: index!,
+          isEdit: true,
+        );
+        // child = Container();
+        break;
       case CONTENT_TYPE.URL:
         child = DefaultTextField(
           key: objKey!.objKey,
@@ -103,70 +139,26 @@ class ObjectContent {
         );
         break;
       case CONTENT_TYPE.IMAGE:
-        child = Container(
-          padding: const EdgeInsets.symmetric(vertical: 20),
-          width: Get.width,
-          height: 200,
-          child: AssetThumb(
-            asset: (data),
-            width: Get.width.toInt(),
-            height: 200,
-          ),
-        );
+        child = LayoutImage(data: data);
         break;
       case CONTENT_TYPE.VIDEO:
-        child = VideoPlayerWidget(data: (data as VideoPlayerController));
+        child = LayoutVideo(data: data);
         break;
       case CONTENT_TYPE.YOUTUBE:
-        final url =
-            "https://www.youtube.com/embed/${data.toString().split('/').last}";
-        child = Padding(
-          padding: const EdgeInsets.symmetric(vertical: 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(
-                height: 200,
-                child: WebViewTools(
-                  url: url,
-                ),
-              ),
-              Text("Youtube : $url"),
-            ],
-          ),
-        );
+        child = child =
+            LayoutWebview(data: data, type: LAYOUT_WEBVIEW_TYPE.YOUTUBE);
         break;
       case CONTENT_TYPE.TIKTOK:
-        final url = "${data.toString().split('?').first}";
-        data = url;
-        child = Padding(
-          padding: const EdgeInsets.symmetric(vertical: 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(
-                height: 400,
-                child: WebViewTools(
-                  url: data,
-                ),
-              ),
-              Text("Tiktok : $data"),
-            ],
-          ),
-        );
+        child = LayoutWebview(data: data, type: LAYOUT_WEBVIEW_TYPE.TIKTOK);
         break;
-
+      case CONTENT_TYPE.TWITTER:
+        child = LayoutWebview(data: data, type: LAYOUT_WEBVIEW_TYPE.TWTTER);
+        break;
+      case CONTENT_TYPE.INSTAGRAM:
+        child = LayoutWebview(data: data, type: LAYOUT_WEBVIEW_TYPE.INSTAGRAM);
+        break;
       case CONTENT_TYPE.LOCATION:
-        child = Padding(
-          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
-          child: Row(
-            children: [
-              Icon(Icons.pin_drop),
-              SizedBox(width: 10),
-              Expanded(child: Text(data.toString().split("|").first)),
-            ],
-          ),
-        );
+        child = LayoutLocation(data: data);
         break;
       default:
         child = DefaultTextField(
@@ -192,19 +184,23 @@ class ObjectContent {
     );
   }
 
-  KeepData saveDataObj(ObjectKeys? objKey) {
+  KeepData saveDataObj(ObjectKeys? objKey, String createDate) {
     // Map<String, dynamic> dataMap = {};
     Map<String, dynamic> styles = {
       "Bold": objKey?.textIsBold,
       "Italic": objKey?.textIsItalic,
       "Large": objKey?.textIsLarge,
       "Underline": objKey?.textIsUnderline,
-      "Color": type == CONTENT_TYPE.URL ? "0xFF2196F3" : "",
+      "Color": type == CONTENT_TYPE.URL
+          ? ColorConstant.blue
+          : objKey?.color ?? ColorConstant.black,
     };
+
     KeepData keepData = KeepData(
         id: "$id",
         rawData: "",
-        type: "TEXT",
+        createDate: createDate,
+        type: ContentTypes.text,
         data: "",
         styles: (type == CONTENT_TYPE.TEXT ||
                 type == CONTENT_TYPE.BULLET ||
@@ -218,22 +214,25 @@ class ObjectContent {
         keepData.data = data;
         break;
       case CONTENT_TYPE.BULLET:
-        keepData.type = "BULLET";
+        keepData.type = ContentTypes.bullet;
         keepData.data = data.toString();
         break;
       case CONTENT_TYPE.URL:
-        keepData.type = "URL";
+        keepData.type = ContentTypes.url;
         keepData.data = data;
-
+        break;
+      case CONTENT_TYPE.TEXT_HTML:
+        keepData.type = ContentTypes.textHtml;
+        keepData.data = data;
         break;
       case CONTENT_TYPE.IMAGE:
-        keepData.type = "IMAGE";
+        keepData.type = ContentTypes.image;
         keepData.rawData = (data as Asset);
         keepData.data = "Base64";
 
         break;
       case CONTENT_TYPE.VIDEO:
-        keepData.type = "VIDEO";
+        keepData.type = ContentTypes.video;
         keepData.rawData = data;
         keepData.data = "Base64";
         // keepData.rawData = base64Encode((data as File).readAsBytesSync());
@@ -241,15 +240,15 @@ class ObjectContent {
 
         break;
       case CONTENT_TYPE.YOUTUBE:
-        keepData.type = "YOUTUBE";
+        keepData.type = ContentTypes.youtube;
         keepData.data = data;
         break;
       case CONTENT_TYPE.TIKTOK:
-        keepData.type = "TIKTOK";
+        keepData.type = ContentTypes.tiktok;
         keepData.data = data;
         break;
       case CONTENT_TYPE.LOCATION:
-        keepData.type = "LOCATION";
+        keepData.type = ContentTypes.location;
         keepData.data = data;
         break;
 

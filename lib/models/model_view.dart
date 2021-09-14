@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 class ModelData {
   late List<KeepData>? data;
 
@@ -25,6 +27,7 @@ class KeepData {
   late String type;
   late dynamic rawData;
   late dynamic data;
+  late String createDate;
   Styles? styles;
 
   KeepData({
@@ -32,6 +35,7 @@ class KeepData {
     required this.type,
     required this.rawData,
     required this.data,
+    required this.createDate,
     this.styles,
   });
 
@@ -40,6 +44,7 @@ class KeepData {
     type = json['Type'];
     rawData = json['RawData'];
     data = json['Data'];
+    createDate = json['CreateDate'];
     styles =
         json['Styles'] != null ? new Styles.fromJson(json['Styles']) : null;
   }
@@ -50,6 +55,7 @@ class KeepData {
     data['Type'] = this.type;
     data['RawData'] = this.rawData.toString();
     data['Data'] = this.data;
+    data['CreateDate'] = this.createDate;
     if (this.styles != null) {
       data['Styles'] = this.styles?.toJson();
     }
@@ -62,7 +68,7 @@ class Styles {
   late bool italic;
   late bool large;
   late bool underline;
-  String? color;
+  Color? color;
 
   Styles(
       {this.bold = false,
@@ -76,7 +82,12 @@ class Styles {
     italic = json['Italic'] ?? false;
     large = json['Large'] ?? false;
     underline = json['Underline'] ?? false;
-    color = json['Color'] ?? false;
+    if (json['Color'].toString().contains('0x'))
+      color = json['Color'];
+    else {
+      int _color = int.parse("0x${json['Color']}");
+      color = Color(_color);
+    }
   }
 
   Map<String, dynamic> toJson() {
@@ -85,7 +96,10 @@ class Styles {
     data['Italic'] = this.italic;
     data['Large'] = this.large;
     data['Underline'] = this.underline;
-    data['Color'] = this.color;
+    if (data['Color'].toString().contains("0x"))
+      data['Color'] = "${this.color!.value.toRadixString(16)}";
+    else
+      data['Color'] = "0x${this.color!.value.toRadixString(16)}";
     return data;
   }
 }

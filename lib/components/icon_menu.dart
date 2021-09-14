@@ -12,6 +12,8 @@ import 'package:multi_image_picker2/multi_image_picker2.dart';
 import 'package:place_picker/place_picker.dart';
 import 'package:video_player/video_player.dart';
 
+import 'layout_objects/layout_html_text.dart';
+
 class IconMenu extends StatelessWidget {
   IconMenu({Key? key, this.isInsert = false, this.indexAt}) : super(key: key);
   final controller = ControllerContent.to;
@@ -26,10 +28,11 @@ class IconMenu extends StatelessWidget {
         _iconButtonGroup(
           title: "Text",
           children: [
-            _iconButton(Icons.text_fields_rounded, CONTENT_TYPE.TEXT),
-            _iconButton(
-                Icons.format_list_bulleted_rounded, CONTENT_TYPE.BULLET),
-            // _iconButton(Icons.format_bold_rounded, CONTENT_TYPE.TEXT_BOLD),
+            // _iconButton(Icons.text_fields_rounded, CONTENT_TYPE.TEXT),
+            // _iconButton(
+            //     Icons.format_list_bulleted_rounded, CONTENT_TYPE.BULLET),
+            // _iconButton(Icons.http_rounded, CONTENT_TYPE.HTML_EDITOR),
+            _iconButton(Icons.text_fields_rounded, CONTENT_TYPE.TEXT_HTML),
           ],
         ),
         _iconButtonGroup(
@@ -40,11 +43,13 @@ class IconMenu extends StatelessWidget {
           ],
         ),
         _iconButtonGroup(
-          title: "Url",
+          title: "Social",
           children: [
-            _iconButton(Icons.add_link_rounded, CONTENT_TYPE.URL),
+            // _iconButton(Icons.add_link_rounded, CONTENT_TYPE.URL),
             _iconButton(FontAwesomeIcons.youtube, CONTENT_TYPE.YOUTUBE),
             _iconButton(FontAwesomeIcons.tiktok, CONTENT_TYPE.TIKTOK),
+            // _iconButton(FontAwesomeIcons.twitter, CONTENT_TYPE.TWITTER),
+            // _iconButton(FontAwesomeIcons.instagram, CONTENT_TYPE.INSTAGRAM),
           ],
         ),
         _iconButtonGroup(
@@ -67,6 +72,7 @@ class IconMenu extends StatelessWidget {
                 color: Colors.grey, fontSize: 14, fontWeight: FontWeight.bold)),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          // spacing: 10,
           children: children.map((child) => child).toList(),
         ),
         // SizedBox(height: 5),
@@ -100,6 +106,7 @@ class IconMenu extends StatelessWidget {
   }
 
   void addContentObject(CONTENT_TYPE type, {int? index}) async {
+    final defualtText = '<p>Some text.</p>';
     switch (type) {
       case CONTENT_TYPE.TEXT:
         controller.addContent(
@@ -113,17 +120,23 @@ class IconMenu extends StatelessWidget {
           index: index,
         );
         break;
-      // case CONTENT_TYPE.TEXT_BOLD:
-      //   controller.addContent(
-      //     ObjectContent(type, data: ""),
-      //     index: index,
-      //   );
-      //   break;
       case CONTENT_TYPE.URL:
         controller.addContent(
           ObjectContent(type, data: ""),
           index: index,
         );
+        break;
+      case CONTENT_TYPE.TEXT_HTML:
+        final data = await Get.to(HtmlEditorExample(
+          index: index ?? 0,
+          isEdit: false,
+        ));
+        debugPrint('data : $data');
+        if (data != null && data.toString().isNotEmpty)
+          controller.addContent(
+            ObjectContent(type, data: data),
+            index: index,
+          );
         break;
       case CONTENT_TYPE.IMAGE:
         List<Asset> images = <Asset>[];
@@ -146,11 +159,15 @@ class IconMenu extends StatelessWidget {
         if (images.isNotEmpty) {
           images.forEach((image) {
             controller.addContent(
-              ObjectContent(CONTENT_TYPE.TEXT, data: ""),
+              ObjectContent(type, data: image),
               index: index,
             );
+            // controller.addContent(
+            //   ObjectContent(CONTENT_TYPE.TEXT, data: ""),
+            //   index: index,
+            // );
             controller.addContent(
-              ObjectContent(type, data: image),
+              ObjectContent(CONTENT_TYPE.TEXT_HTML, data: defualtText),
               index: index,
             );
           });
@@ -163,16 +180,20 @@ class IconMenu extends StatelessWidget {
             maxDuration: const Duration(seconds: 10));
         if (pickedFile != null) {
           controller.addContent(
-            ObjectContent(CONTENT_TYPE.TEXT, data: ""),
-            index: index,
-          );
-          controller.addContent(
             ObjectContent(
               type,
               data: VideoPlayerController.file(
                 File(pickedFile.path),
               ),
             ),
+            index: index,
+          );
+          // controller.addContent(
+          //   ObjectContent(CONTENT_TYPE.TEXT, data: ""),
+          //   index: index,
+          // );
+          controller.addContent(
+            ObjectContent(CONTENT_TYPE.TEXT_HTML, data: defualtText),
             index: index,
           );
         }
@@ -183,11 +204,15 @@ class IconMenu extends StatelessWidget {
           keyword: 'youtu',
           onConfirm: (text) {
             controller.addContent(
-              ObjectContent(CONTENT_TYPE.TEXT, data: ""),
+              ObjectContent(type, data: text),
               index: index,
             );
+            // controller.addContent(
+            //   ObjectContent(CONTENT_TYPE.TEXT, data: ""),
+            //   index: index,
+            // );
             controller.addContent(
-              ObjectContent(type, data: text),
+              ObjectContent(CONTENT_TYPE.TEXT_HTML, data: defualtText),
               index: index,
             );
           },
@@ -199,11 +224,55 @@ class IconMenu extends StatelessWidget {
           keyword: 'tiktok',
           onConfirm: (text) {
             controller.addContent(
-              ObjectContent(CONTENT_TYPE.TEXT, data: ""),
+              ObjectContent(type, data: text),
               index: index,
             );
+            // controller.addContent(
+            //   ObjectContent(CONTENT_TYPE.TEXT, data: ""),
+            //   index: index,
+            // );
+            controller.addContent(
+              ObjectContent(CONTENT_TYPE.TEXT_HTML, data: defualtText),
+              index: index,
+            );
+          },
+        );
+        break;
+      case CONTENT_TYPE.TWITTER:
+        await Popup.inputText(
+          'Enter Twitter URL :',
+          keyword: 'twitter',
+          onConfirm: (text) {
             controller.addContent(
               ObjectContent(type, data: text),
+              index: index,
+            );
+            // controller.addContent(
+            //   ObjectContent(CONTENT_TYPE.TEXT, data: ""),
+            //   index: index,
+            // );
+            controller.addContent(
+              ObjectContent(CONTENT_TYPE.TEXT_HTML, data: defualtText),
+              index: index,
+            );
+          },
+        );
+        break;
+      case CONTENT_TYPE.INSTAGRAM:
+        await Popup.inputText(
+          'Enter Instagram URL :',
+          keyword: 'instagram',
+          onConfirm: (text) {
+            controller.addContent(
+              ObjectContent(type, data: text),
+              index: index,
+            );
+            // controller.addContent(
+            //   ObjectContent(CONTENT_TYPE.TEXT, data: ""),
+            //   index: index,
+            // );
+            controller.addContent(
+              ObjectContent(CONTENT_TYPE.TEXT_HTML, data: defualtText),
               index: index,
             );
           },
@@ -216,7 +285,7 @@ class IconMenu extends StatelessWidget {
           controller.addContent(
             ObjectContent(type,
                 data:
-                    "${result.formattedAddress}|${result.latLng!.latitude}, ${result.latLng!.longitude}"),
+                    "${result.name}\n${result.formattedAddress}|${result.latLng!.latitude}, ${result.latLng!.longitude}"),
             index: index,
           );
         }
