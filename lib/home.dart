@@ -1,9 +1,9 @@
-import 'package:creator_content/components/slidable_widget.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import 'components/button_add_content.dart';
+import 'components/slidable_widget.dart';
 import 'components/text_tools_bar.dart';
 import 'controllers/controller_content.dart';
 
@@ -73,48 +73,72 @@ class MyHomePage extends StatelessWidget {
           ],
           elevation: 0.0,
         ),
-        body: Obx(() => Column(
-              children: [
-                TextToolsBar(),
-                Expanded(
-                    child: ReorderableListView(
-                  physics: ClampingScrollPhysics(),
-                  shrinkWrap: true,
-                  dragStartBehavior: DragStartBehavior.down,
-                  proxyDecorator: (child, _, animated) {
-                    return FocusDragWidget(
-                      child: child,
-                    );
-                  },
-                  buildDefaultDragHandles: controller.isEditLayout.value,
-                  children: [
-                    ...controller.contents.map((data) {
-                      int index = controller.contents.indexOf(data);
-                      return SlidableWidget(
-                          key: ValueKey(data.id),
-                          objId: data.id!,
-                          contentTpye: data.type,
-                          index: index,
-                          child: Container(
-                              key: ValueKey(data.id),
-                              child: data.createWidget(
-                                controller.isSelectedContent.value,
-                                data.id!,
-                                objKey: controller.objKeys.firstWhere(
-                                    (objKey) => objKey.objId == data.id!),
-                                index: index,
-                              )));
-                    }).toList(),
-                    SizedBox(key: UniqueKey(), height: 150)
-                  ],
-                  onReorder: controller.onReorder,
-                ))
-              ],
-            )),
+        body: Column(
+            children: [TextToolsBar(), Expanded(child: ContentWidget())]),
         floatingActionButton: ButtonAddContent(),
       ),
     );
   }
+}
+
+class ContentWidget extends StatefulWidget {
+  const ContentWidget({
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  State<ContentWidget> createState() => _ContentWidgetState();
+}
+
+class _ContentWidgetState extends State<ContentWidget>
+    with AutomaticKeepAliveClientMixin {
+  late ControllerContent controller;
+  @override
+  void initState() {
+    super.initState();
+    controller = ControllerContent.to;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+    return Obx(() => ReorderableListView(
+          physics: ClampingScrollPhysics(),
+          // physics: BouncingScrollPhysics(),
+          shrinkWrap: true,
+          dragStartBehavior: DragStartBehavior.down,
+          proxyDecorator: (child, _, animated) {
+            return FocusDragWidget(
+              child: child,
+            );
+          },
+          buildDefaultDragHandles: controller.isEditLayout.value,
+          children: [
+            ...controller.contents.map((data) {
+              int index = controller.contents.indexOf(data);
+              return SlidableWidget(
+                  key: ValueKey(data.id),
+                  objId: data.id!,
+                  contentTpye: data.type,
+                  index: index,
+                  child: Container(
+                      key: ValueKey(data.id),
+                      child: data.createWidget(
+                        controller.isSelectedContent.value,
+                        data.id!,
+                        objKey: controller.objKeys
+                            .firstWhere((objKey) => objKey.objId == data.id!),
+                        index: index,
+                      )));
+            }).toList(),
+            SizedBox(key: UniqueKey(), height: 150)
+          ],
+          onReorder: controller.onReorder,
+        ));
+  }
+
+  @override
+  bool get wantKeepAlive => true;
 }
 
 class FocusDragWidget extends StatelessWidget {

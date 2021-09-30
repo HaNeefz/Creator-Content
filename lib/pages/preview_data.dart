@@ -264,7 +264,7 @@ class PreviewData extends StatelessWidget {
     return Container(
       key: ValueKey(keepData.id),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           child,
         ],
@@ -272,6 +272,6 @@ class PreviewData extends StatelessWidget {
     );
   }
 
-  @override
-  bool get wantKeepAlive => true;
+  // @override
+  // bool get wantKeepAlive => true;
 }

@@ -11,8 +11,10 @@ import 'package:creator_content/themes/color_constants.dart';
 import 'package:creator_content/utils/content_types.dart';
 import 'package:flutter/material.dart';
 import 'package:html_editor_enhanced/html_editor.dart';
+import 'package:image_picker/image_picker.dart';
+
 // import 'package:html_editor_enhanced/html_editor.dart';
-import 'package:multi_image_picker2/multi_image_picker2.dart';
+// import 'package:multi_image_picker2/multi_image_picker2.dart';
 
 import 'model_view.dart';
 import 'object_keys.dart';
@@ -120,12 +122,12 @@ class ObjectContent {
         );
         break;
       case CONTENT_TYPE.TEXT_HTML:
+        // child = WebViewPlusExampleMainPage(html: data);
         child = ViewHtml(
           html: data,
           index: index!,
           isEdit: true,
         );
-        // child = Container();
         break;
       case CONTENT_TYPE.URL:
         child = DefaultTextField(
@@ -227,7 +229,7 @@ class ObjectContent {
         break;
       case CONTENT_TYPE.IMAGE:
         keepData.type = ContentTypes.image;
-        keepData.rawData = (data as Asset);
+        keepData.rawData = (data as XFile);
         keepData.data = "Base64";
 
         break;

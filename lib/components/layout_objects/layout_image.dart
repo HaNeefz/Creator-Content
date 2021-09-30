@@ -1,14 +1,17 @@
+import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:creator_content/components/layout_objects/template.dart';
 import 'package:creator_content/controllers/controller_content.dart';
 import 'package:creator_content/models/model_view.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:multi_image_picker2/multi_image_picker2.dart';
+import 'package:image_picker/image_picker.dart';
+
+// import 'package:multi_image_picker2/multi_image_picker2.dart';
 
 import '../module_view_image/view_images.dart';
 import 'constant.dart';
+import 'template.dart';
 
 class LayoutImage extends StatelessWidget {
   final String? id;
@@ -25,41 +28,40 @@ class LayoutImage extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       child: Templete(
-          customPadding: const EdgeInsets.symmetric(
-              vertical: LayoutConstant.paddingVertical - 10),
+          customPadding: const EdgeInsets.fromLTRB(
+              0,
+              LayoutConstant.paddingVertical - 10,
+              0,
+              LayoutConstant.paddingVertical - 10),
           child: Container(
-            alignment: Alignment.center,
-            height: (data as Asset).isPortrait ? 280 : 200,
-            child: Stack(
-              children: [
-                AssetThumb(
-                  asset: (data as Asset),
-                  width: Get.width.toInt(),
-                  height: (data as Asset).isPortrait ? 280 : 200,
-                ),
-                // if ((data as Asset).isPortrait)
-                //   Center(
-                //     child: Container(
-                //       color: Colors.white,
-                //       child: Text(
-                //         'isPortrait',
-                //         style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
-                //       ),
-                //     ),
-                //   )
-                // else
-                //   Center(
-                //     child: Container(
-                //       color: Colors.white,
-                //       child: Text(
-                //         'isLandscape',
-                //         style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
-                //       ),
-                //     ),
-                //   )
-              ],
+            color: Colors.black,
+            child: Image.file(
+              File((data as XFile).path),
+              width: Get.width,
+              height: 280,
+              // cacheWidth: Get.width.toInt(),
+              // cacheHeight: 200,
+              fit: BoxFit.contain,
             ),
-          )),
+          )
+          // FlutterLogo(
+          //   size: 150,
+          // ),
+          // child: AssetThumb(
+          //   asset: (data as Asset),
+          //   width: Get.width.toInt(),
+          // ),
+          ),
+      // Templete(
+      //   customPadding: const EdgeInsets.symmetric(
+      //     vertical: LayoutConstant.paddingVertical - 10,
+      //   ),
+      //   child: AssetThumb(
+      //     asset: (data as Asset),
+      //     width: 200, //Get.width.toInt(),
+      //     height: 200, //(data as Asset).isPortrait ? 280 : 200,
+      //   ),
+      // ),
       onTap: isPreview
           ? () async {
               final controller = ControllerContent.to;
@@ -72,11 +74,12 @@ class LayoutImage extends StatelessWidget {
                   if (keepData.id == id) {
                     currentImage = id!;
                   }
-                  modelImages.add(ModelImage(
+                  modelImages.add(
+                    ModelImage(
                       id: keepData.id,
-                      image: ((await (keepData.rawData as Asset).getByteData())
-                          .buffer
-                          .asUint8List())));
+                      image: (await (keepData.rawData as XFile).readAsBytes()),
+                    ),
+                  );
                 }
               }
               controller.setLoadingImages();

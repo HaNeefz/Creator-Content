@@ -2,10 +2,13 @@
     package="com.example.creator_content">
     <uses-permission android:name="android.permission.INTERNET"/>
     <!-- Add this permission -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
    <application
         android:label="creator_content"
         android:icon="@mipmap/ic_launcher">
+        android:usesCleartextTraffic="true">
         <activity
             android:name=".MainActivity"
             android:launchMode="singleTop"

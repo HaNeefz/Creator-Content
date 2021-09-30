@@ -1,8 +1,10 @@
 import 'package:creator_content/components/default_textfield.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../components/icon_menu.dart';
+import 'image_picker.dart';
 
 class Popup {
   static Future iconMenu({bool isInsert = false, int? indexAt}) {
@@ -81,6 +83,96 @@ class Popup {
         ],
       ),
     ));
+  }
+
+  static loading() {
+    Get.dialog(Container(
+      width: 100,
+      height: 100,
+      child: Center(
+        child: Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(5), color: Colors.white),
+            child: CircularProgressIndicator()),
+      ),
+    ));
+  }
+
+  static dismiss() async {
+    Get.back();
+  }
+
+  static Future<List<XFile?>> imagesPicker() async {
+    List<XFile?> images = <XFile>[];
+
+    final _data = await Get.dialog(AlertDialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+      title: Text('Select the image source.'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ListTile(
+              leading: Icon(Icons.add_a_photo_rounded, color: Colors.black),
+              title: Text('Capture a photo'),
+              onTap: () async {
+                final image = await ImagePickerUtils.singleImageCamera();
+                if (image != null) images.add(image);
+                Get.back(result: images);
+              }),
+          ListTile(
+              leading:
+                  Icon(Icons.add_photo_alternate_outlined, color: Colors.black),
+              title: Text('Pick an image'),
+              onTap: () async {
+                await Popup.loading();
+                images.addAll(await ImagePickerUtils.multiImage());
+                await Popup.dismiss();
+                Get.back(result: images);
+              }),
+        ],
+      ),
+    ));
+
+    if (_data != null) images = _data;
+
+    if (images.length == 0)
+      return [];
+    else
+      return images;
+  }
+
+  static Future<XFile?> videosPicker() async {
+    XFile? video;
+
+    final _data = await Get.dialog(AlertDialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+      title: Text('Select the video source.'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ListTile(
+              leading: Icon(Icons.video_call_rounded, color: Colors.black),
+              title: Text('Capture a video.'),
+              onTap: () async {
+                final image = await ImagePickerUtils.videoCapture();
+                if (image != null) video = image;
+                Get.back(result: video);
+              }),
+          ListTile(
+              leading:
+                  Icon(Icons.video_collection_outlined, color: Colors.black),
+              title: Text('Pick a video'),
+              onTap: () async {
+                final image = await ImagePickerUtils.videoGallery();
+                if (image != null) video = image;
+                Get.back(result: video);
+              }),
+        ],
+      ),
+    ));
+    if (_data != null) video = _data;
+    return video;
   }
 
   static Widget _buttonCancel([Function()? onCancel]) {
