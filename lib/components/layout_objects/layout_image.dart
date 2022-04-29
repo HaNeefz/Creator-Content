@@ -3,45 +3,47 @@ import 'dart:typed_data';
 
 import 'package:creator_content/controllers/controller_content.dart';
 import 'package:creator_content/models/model_view.dart';
+import 'package:creator_content/models/object_content.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 
-// import 'package:multi_image_picker2/multi_image_picker2.dart';
-
 import '../module_view_image/view_images.dart';
-import 'constant.dart';
 import 'template.dart';
 
 class LayoutImage extends StatelessWidget {
   final String? id;
   final dynamic data;
   final bool isPreview;
+  final ObjectContent? obj;
   const LayoutImage({
     Key? key,
     this.data,
     this.isPreview = false,
     this.id,
+    this.obj,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       child: Templete(
-          customPadding: const EdgeInsets.fromLTRB(
-              0,
-              LayoutConstant.paddingVertical - 10,
-              0,
-              LayoutConstant.paddingVertical - 10),
+          addPaddingHorizontal: true,
+          obj: obj,
+          isPreview: isPreview,
           child: Container(
-            color: Colors.black,
-            child: Image.file(
-              File((data as XFile).path),
-              width: Get.width,
-              height: 280,
-              // cacheWidth: Get.width.toInt(),
-              // cacheHeight: 200,
-              fit: BoxFit.contain,
+            // color: Colors.white,
+            child: Hero(
+              tag: id ?? UniqueKey().toString(),
+              transitionOnUserGestures: true,
+              child: Image.file(
+                File((data as XFile).path),
+                width: Get.width,
+                height: 280,
+                // cacheWidth: Get.width.toInt(),
+                // cacheHeight: 200,
+                fit: BoxFit.fitHeight,
+              ),
             ),
           )
           // FlutterLogo(

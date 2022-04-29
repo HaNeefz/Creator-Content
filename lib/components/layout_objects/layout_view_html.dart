@@ -1,11 +1,11 @@
 import 'package:creator_content/components/layout_objects/template.dart';
+import 'package:creator_content/models/object_content.dart';
 import 'package:creator_content/utils/open_link.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:get/route_manager.dart';
 import 'package:webview_flutter_plus/webview_flutter_plus.dart';
 
-import 'constant.dart';
 import 'layout_html_text.dart';
 
 class WebViewPlusExampleMainPage extends StatefulWidget {
@@ -58,6 +58,7 @@ class ViewHtml extends StatelessWidget {
   final String html;
   final bool isPreview;
   final bool isEdit;
+  final ObjectContent? obj;
   final int? index;
   const ViewHtml({
     Key? key,
@@ -65,6 +66,7 @@ class ViewHtml extends StatelessWidget {
     required this.index,
     required this.isEdit,
     this.isPreview = false,
+    this.obj,
   }) : super(key: key);
 
   @override
@@ -80,9 +82,12 @@ class ViewHtml extends StatelessWidget {
       },
       child: SingleChildScrollView(
         child: Templete(
-          customPadding: const EdgeInsets.symmetric(
-              vertical: LayoutConstant.paddingVertical - 10,
-              horizontal: LayoutConstant.paddingHorizontal),
+          addPaddingHorizontal: true,
+          obj: obj,
+          isPreview: isPreview,
+          // customPadding: const EdgeInsets.symmetric(
+          //     vertical: LayoutConstant.paddingVertical - 10,
+          //     horizontal: LayoutConstant.paddingHorizontal),
           child: Container(
             alignment: Alignment.centerLeft,
             constraints:

@@ -38,11 +38,12 @@ class ObjectContent {
   late TextEditingController textController;
   late HtmlEditorController htmlController;
   late String createDate;
-  String? hashTag;
+  String? hashTags;
   // late HtmlEditorController htmlController;
   FocusNode? focusNode;
   int? id;
   dynamic data;
+  dynamic rawData;
   int _currentTextLength = 0;
   ObjectKeys? objKey;
 
@@ -70,12 +71,14 @@ class ObjectContent {
     } else if (this.type == CONTENT_TYPE.TEXT_HTML) {
       htmlController = HtmlEditorController();
     }
+    hashTags = '';
   }
 
   /// [onSelect] if true is selecting Object.
   /// else is editing layout Object.
   Widget createWidget(bool onSelect, int objId,
       {ObjectKeys? objKey, int? index, bool readOnly = false}) {
+    final controller = ControllerContent.to;
     if (objKey != null) {
       this.objKey = objKey;
     }
@@ -127,6 +130,7 @@ class ObjectContent {
           html: data,
           index: index!,
           isEdit: true,
+          obj: controller.contents[index],
         );
         break;
       case CONTENT_TYPE.URL:
@@ -141,26 +145,50 @@ class ObjectContent {
         );
         break;
       case CONTENT_TYPE.IMAGE:
-        child = LayoutImage(data: data);
+        child = LayoutImage(
+          data: data,
+          obj: controller.contents[index!],
+        );
         break;
       case CONTENT_TYPE.VIDEO:
-        child = LayoutVideo(data: data);
+        child = LayoutVideo(
+          data: data,
+          obj: controller.contents[index!],
+        );
         break;
       case CONTENT_TYPE.YOUTUBE:
-        child = child =
-            LayoutWebview(data: data, type: LAYOUT_WEBVIEW_TYPE.YOUTUBE);
+        child = child = LayoutWebview(
+          data: data,
+          type: LAYOUT_WEBVIEW_TYPE.YOUTUBE,
+          obj: controller.contents[index!],
+        );
         break;
       case CONTENT_TYPE.TIKTOK:
-        child = LayoutWebview(data: data, type: LAYOUT_WEBVIEW_TYPE.TIKTOK);
+        child = LayoutWebview(
+          data: data,
+          type: LAYOUT_WEBVIEW_TYPE.TIKTOK,
+          obj: controller.contents[index!],
+        );
         break;
       case CONTENT_TYPE.TWITTER:
-        child = LayoutWebview(data: data, type: LAYOUT_WEBVIEW_TYPE.TWTTER);
+        child = LayoutWebview(
+          data: data,
+          type: LAYOUT_WEBVIEW_TYPE.TWTTER,
+          obj: controller.contents[index!],
+        );
         break;
       case CONTENT_TYPE.INSTAGRAM:
-        child = LayoutWebview(data: data, type: LAYOUT_WEBVIEW_TYPE.INSTAGRAM);
+        child = LayoutWebview(
+          data: data,
+          type: LAYOUT_WEBVIEW_TYPE.INSTAGRAM,
+          obj: controller.contents[index!],
+        );
         break;
       case CONTENT_TYPE.LOCATION:
-        child = LayoutLocation(data: data);
+        child = LayoutLocation(
+          data: data,
+          obj: controller.contents[index!],
+        );
         break;
       default:
         child = DefaultTextField(
@@ -186,7 +214,8 @@ class ObjectContent {
     );
   }
 
-  KeepData saveDataObj(ObjectKeys? objKey, String createDate) {
+  KeepData saveDataObj(
+      ObjectKeys? objKey, String createDate, ObjectContent? obj) {
     // Map<String, dynamic> dataMap = {};
     Map<String, dynamic> styles = {
       "Bold": objKey?.textIsBold,
@@ -208,7 +237,8 @@ class ObjectContent {
                 type == CONTENT_TYPE.BULLET ||
                 type == CONTENT_TYPE.URL)
             ? Styles.fromJson(styles)
-            : null);
+            : null,
+        obj: obj!);
 
     switch (type) {
       case CONTENT_TYPE.TEXT:
@@ -226,6 +256,7 @@ class ObjectContent {
       case CONTENT_TYPE.TEXT_HTML:
         keepData.type = ContentTypes.textHtml;
         keepData.data = data;
+        keepData.obj = obj;
         break;
       case CONTENT_TYPE.IMAGE:
         keepData.type = ContentTypes.image;

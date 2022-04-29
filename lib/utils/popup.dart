@@ -1,3 +1,4 @@
+import 'package:creator_content/components/chipWidget.dart';
 import 'package:creator_content/components/default_textfield.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -30,21 +31,23 @@ class Popup {
   }
 
   static Future<bool> suceess(String message) async {
-    return await Get.dialog(AlertDialog(
+    final data = await Get.dialog(AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
       // title: Text("Menu"),
       content: Text(message),
       actions: [_buttonSuccess()],
     ));
+    return data ?? false;
   }
 
   static Future<bool> error(String message) async {
-    return await Get.dialog(AlertDialog(
+    final value = await Get.dialog(AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
       // title: Text("Menu"),
       content: Text(message),
       actions: [_buttonCancel()],
     ));
+    return value ?? false;
   }
 
   static inputText(String message,
@@ -175,6 +178,26 @@ class Popup {
     return video;
   }
 
+  static Future<String> addHashTag([String? hashTags]) async {
+    List<String> tags = [];
+    if (hashTags != null) {
+      if (hashTags.split(', ').length > 0) {
+        tags = hashTags.split(', ');
+      } else {
+        tags.add(hashTags);
+      }
+    }
+
+    tags = await Get.dialog(AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+          title: Text('Add a Hashtag.'),
+          content: AddHashTagesWidget(tags: tags),
+        )) ??
+        [];
+
+    return tags.length > 0 ? tags.join(', ') : '';
+  }
+
   static Widget _buttonCancel([Function()? onCancel]) {
     return TextButton(
       style: ButtonStyle(
@@ -253,5 +276,150 @@ class InputText extends StatelessWidget {
         )
       ],
     );
+  }
+}
+
+class AddHashTagesWidget extends StatefulWidget {
+  final List<String> tags;
+  const AddHashTagesWidget({Key? key, required this.tags}) : super(key: key);
+
+  @override
+  _AddHashTagesWidgetState createState() => _AddHashTagesWidgetState();
+}
+
+class _AddHashTagesWidgetState extends State<AddHashTagesWidget> with Popup {
+  final TextEditingController tagController = TextEditingController(text: '');
+  List<String> _tags = [];
+  int currentlengthTags = 0;
+  @override
+  void initState() {
+    super.initState();
+    _tags = widget.tags;
+    currentlengthTags = _tags.length;
+  }
+
+  @override
+  void dispose() {
+    tagController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+        width: MediaQuery.of(context).size.width,
+        padding: const EdgeInsets.all(10),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: tagController,
+                      decoration: InputDecoration(
+                        prefixIcon: Icon(
+                          Icons.tag_rounded,
+                        ),
+                        // suffixIcon: IconButton(
+                        //   onPressed: () {
+                        //     _tags.add("#${tagController.text}");
+                        //     tagController.clear();
+                        //     setState(() {});
+                        //   },
+                        //   icon: Icon(Icons.add_circle),
+                        // ),
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    icon: Icon(
+                      Icons.add_circle,
+                      color: Colors.blue,
+                      size: 30,
+                    ),
+                    onPressed: () {
+                      if (tagController.text != '') {
+                        _tags.add("#${tagController.text}");
+                        tagController.clear();
+                        setState(() {});
+                      }
+                    },
+                  )
+                  // TextButton(
+                  //   style: ButtonStyle(
+                  //       backgroundColor: MaterialStateProperty.all(Colors.blue),
+                  //       foregroundColor:
+                  //           MaterialStateProperty.all(Colors.white),
+                  //       shape:
+                  //           MaterialStateProperty.all<RoundedRectangleBorder>(
+                  //               RoundedRectangleBorder(
+                  //         borderRadius: BorderRadius.circular(5.0),
+                  //       ))),
+                  //   child: Icon(Icons.add),
+                  //   onPressed: () {
+                  //     _tags.add("#${tagController.text}");
+                  //     tagController.clear();
+                  //     setState(() {});
+                  //   },
+                  // )
+                ],
+              ),
+              ViewHashTageWidget(
+                tags: _tags.join(', '),
+                isEdit: true,
+                onCancel: (e) {
+                  _tags.remove(e);
+                  setState(() {});
+                },
+              ),
+              // Wrap(
+              //   spacing: 5.0,
+              //   children: [
+              //     ..._tags.map((e) {
+              //       return InputChip(
+              //         label: Text(
+              //           e.toString(),
+              //         ),
+              //         onDeleted: () {
+              //           _tags.remove(e);
+              //           setState(() {});
+              //         },
+              //       );
+              //     }).toList(),
+              //   ],
+              // ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  TextButton(
+                    style: ButtonStyle(
+                        backgroundColor:
+                            MaterialStateProperty.all<Color>(Colors.red)),
+                    child:
+                        Text('Cancel', style: TextStyle(color: Colors.white)),
+                    onPressed: () {
+                      Get.back(result: <String>[]);
+                    },
+                  ),
+                  if (currentlengthTags != _tags.length) ...[
+                    SizedBox(width: 5),
+                    TextButton(
+                      style: ButtonStyle(
+                          backgroundColor:
+                              MaterialStateProperty.all<Color>(Colors.blue)),
+                      child:
+                          Text('Save', style: TextStyle(color: Colors.white)),
+                      onPressed: () {
+                        Get.back(result: _tags.length > 0 ? _tags : <String>[]);
+                      },
+                    ),
+                  ]
+                ],
+              ),
+            ],
+          ),
+        ));
   }
 }

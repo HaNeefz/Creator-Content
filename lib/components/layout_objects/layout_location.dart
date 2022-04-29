@@ -1,3 +1,4 @@
+import 'package:creator_content/models/object_content.dart';
 import 'package:creator_content/utils/constant_image_path.dart';
 import 'package:creator_content/utils/open_link.dart';
 import 'package:flutter/material.dart';
@@ -7,7 +8,9 @@ import 'template.dart';
 class LayoutLocation extends StatelessWidget {
   final String data;
   final bool isPreview;
-  const LayoutLocation({Key? key, required this.data, this.isPreview = false})
+  final ObjectContent? obj;
+  const LayoutLocation(
+      {Key? key, required this.data, this.isPreview = false, this.obj})
       : super(key: key);
 
   @override
@@ -15,6 +18,8 @@ class LayoutLocation extends StatelessWidget {
     return GestureDetector(
       child: Templete(
         addPaddingHorizontal: true,
+        obj: obj,
+        isPreview: isPreview,
         child: Row(
           children: [
             // Icon(Icons.map),

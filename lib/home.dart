@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import 'components/button_add_content.dart';
+import 'components/default_textfield.dart';
 import 'components/slidable_widget.dart';
 import 'components/text_tools_bar.dart';
 import 'controllers/controller_content.dart';
+import 'models/object_keys.dart';
 
 class MyHomePage extends StatelessWidget {
   MyHomePage({Key? key}) : super(key: key);
@@ -73,8 +75,10 @@ class MyHomePage extends StatelessWidget {
           ],
           elevation: 0.0,
         ),
-        body: Column(
-            children: [TextToolsBar(), Expanded(child: ContentWidget())]),
+        body: Column(children: [
+          TextToolsBar(),
+          Expanded(child: ContentWidget()),
+        ]),
         floatingActionButton: ButtonAddContent(),
       ),
     );
@@ -126,8 +130,11 @@ class _ContentWidgetState extends State<ContentWidget>
                       child: data.createWidget(
                         controller.isSelectedContent.value,
                         data.id!,
-                        objKey: controller.objKeys
-                            .firstWhere((objKey) => objKey.objId == data.id!),
+                        objKey: controller.objKeys.firstWhere(
+                            (objKey) => objKey.objId == data.id!,
+                            orElse: () => ObjectKeys(
+                                objId: 0,
+                                objKey: GlobalKey<DefaultTextFieldState>())),
                         index: index,
                       )));
             }).toList(),

@@ -31,7 +31,7 @@ class _ContentLayoutState extends State<ContentLayout> {
       if (!controller.isEditLayout.value) {
         if (!controller.finalView.value) {
           if (widget.focusNode != controller.lastFocus.value) {
-            FocusScope.of(context).unfocus();
+            if (mounted) FocusScope.of(context).unfocus();
           } else if (FocusScope.of(context).canRequestFocus) {
             FocusScope.of(context).requestFocus(controller.lastFocus.value);
             controller.onModify(widget.objId);

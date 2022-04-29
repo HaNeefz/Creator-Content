@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'object_content.dart';
+
 class ModelData {
   late List<KeepData>? data;
 
@@ -27,6 +29,7 @@ class KeepData {
   late String type;
   late dynamic rawData;
   late dynamic data;
+  late ObjectContent obj;
   late String createDate;
   Styles? styles;
 
@@ -35,6 +38,7 @@ class KeepData {
     required this.type,
     required this.rawData,
     required this.data,
+    required this.obj,
     required this.createDate,
     this.styles,
   });
@@ -42,6 +46,7 @@ class KeepData {
   KeepData.fromJson(Map<String, dynamic> json) {
     id = json['Id'];
     type = json['Type'];
+    obj = json['HashTags'];
     rawData = json['RawData'];
     data = json['Data'];
     createDate = json['CreateDate'];
@@ -53,6 +58,7 @@ class KeepData {
     final Map<String, dynamic> data = new Map<String, dynamic>();
     data['Id'] = this.id;
     data['Type'] = this.type;
+    data['HashTag'] = this.obj.hashTags;
     data['RawData'] = this.rawData.toString();
     data['Data'] = this.data;
     data['CreateDate'] = this.createDate;

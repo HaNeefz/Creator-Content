@@ -5,7 +5,8 @@ import 'package:creator_content/config/config.dart';
 import 'package:creator_content/models/model_view.dart';
 import 'package:creator_content/models/object_content.dart';
 import 'package:creator_content/models/object_keys.dart';
-import 'package:creator_content/pages/preview_data.dart';
+import 'package:creator_content/pages/hash_tage/hash_tag_page.dart';
+import 'package:creator_content/pages/preview/preview_data.dart';
 import 'package:creator_content/themes/color_constants.dart';
 import 'package:creator_content/utils/popup.dart';
 import 'package:flutter/material.dart';
@@ -24,6 +25,7 @@ class ControllerContent extends GetxController {
   var contents = <ObjectContent>[].obs;
   var selectedContent = <int>{}.obs;
   var objKeys = <ObjectKeys>[].obs;
+  var hashTags = <String>[].obs;
   var modifyIndexAt = 0.obs;
   var currentStyleObject =
       ObjectKeys(objId: 1, objKey: GlobalKey<DefaultTextFieldState>()).obs;
@@ -34,6 +36,7 @@ class ControllerContent extends GetxController {
   var finalView = false.obs;
   var loadingImages = false.obs;
   var periodsDate = <ShowDateTime>{}.obs;
+  var tagPeriodsDate = <ShowDateTime>{}.obs;
 
   @override
   void onInit() {
@@ -211,8 +214,8 @@ class ControllerContent extends GetxController {
       'Are you sure delete.',
       onConfirm: () {
         selectedContent.forEach((objId) {
-          contents.removeWhere((obj) => obj.id == objId);
           objKeys.removeWhere((obj) => obj.objId == objId);
+          contents.removeWhere((obj) => obj.id == objId);
         });
 
         selectedContent.clear();
@@ -244,6 +247,28 @@ class ControllerContent extends GetxController {
     objKeys.removeAt(index);
     contents.removeAt(index);
     _checkCompletedOnEdit();
+  }
+
+  void addHashTags(int index, String tags) {
+    // if (tags.length > 0) {
+    contents[index].hashTags = tags;
+    contents.refresh();
+    // }
+  }
+
+  void searchHashTags() {
+    hashTags.clear();
+    var tempTags = <String>[];
+    contents.forEach((item) {
+      tempTags.add(item.hashTags!);
+    });
+
+    var tag = tempTags.join().split(', ');
+    tag.forEach((v) {
+      if (v != '') hashTags.add(v);
+    });
+    // debugPrint('tag : $tag');
+    debugPrint('hashTags : $hashTags');
   }
 
   onSelectedObject() {
@@ -329,19 +354,49 @@ class ControllerContent extends GetxController {
   onEditLocation(int obj) async {
     var tempObj = contents.firstWhere((element) => element.id == obj);
     String latlong = tempObj.data;
+    // debugPrint('latlong : $latlong');
     LocationResult? result = await onSelectLocation(latlong.split("|")[1]);
     if (result != null) {
       int index = contents.indexOf(tempObj);
       var _obj = contents.removeAt(index);
       _obj.data =
-          "${result.formattedAddress}|${result.latLng?.latitude}, ${result.latLng?.longitude}";
+          "${result.name}\n${result.formattedAddress}|${result.latLng?.latitude}, ${result.latLng?.longitude}";
       contents.insert(index, _obj);
     }
   }
 
-  gotoPreviewPage() {
-    previewData();
-    Get.to(() => PreviewData());
+  gotoPreviewPage({String? tag = '', bool onlyTag = false}) {
+    previewData(tag: tag);
+    Get.to(
+      () => PreviewData(
+        tag: tag,
+      ),
+    );
+  }
+
+  gotoHashTagPage(String tag) {
+    setTag(tag);
+    Get.to(() => HashTagsPage(tag: tag));
+  }
+
+  setTag(String tag) {
+    tagPeriodsDate.clear();
+    Set<String> listDate = {};
+    for (var date in contents) {
+      listDate.add(date.createDate.split(' ').first);
+    }
+    contents.forEach((item) {
+      var temp = <KeepData>[];
+      int index = contents.indexOf(item);
+      if (item.hashTags != '') {
+        if (listDate.contains(item.createDate.split(' ').first) &&
+            item.hashTags!.contains(tag)) {
+          temp.add(item.saveDataObj(objKeys[index], item.createDate, item));
+          tagPeriodsDate
+              .add(ShowDateTime(item.createDate.split(' ').first, item: temp));
+        }
+      }
+    });
   }
 
   List<KeepData> popData() {
@@ -349,13 +404,16 @@ class ControllerContent extends GetxController {
     for (var item in contents) {
       periodsDate.add(ShowDateTime(item.createDate));
       int index = contents.indexOf(item);
-      temp.add(item.saveDataObj(objKeys[index], item.createDate));
+      temp.add(item.saveDataObj(objKeys[index], item.createDate, item));
     }
 
     return temp;
   }
 
-  previewData({List<String> rangDate = const []}) {
+  previewData({
+    List<String> rangDate = const [],
+    String? tag = '',
+  }) {
     clearDataPreview();
     Set<String> listDate = {};
     for (var date in contents) {
@@ -376,20 +434,38 @@ class ControllerContent extends GetxController {
       for (var item in contents) {
         var temp = <KeepData>[];
         int index = contents.indexOf(item);
-        if (listDate.contains(item.createDate.split(' ').first)) {
-          temp.add(item.saveDataObj(objKeys[index], item.createDate));
+        if (tag == '') {
+          if (listDate.contains(item.createDate.split(' ').first)) {
+            temp.add(item.saveDataObj(objKeys[index], item.createDate, item));
+            periodsDate.add(
+                ShowDateTime(item.createDate.split(' ').first, item: temp));
+          }
+        } else {
+          if (listDate.contains(item.createDate.split(' ').first) &&
+              item.hashTags!.contains(tag!)) {
+            temp.add(item.saveDataObj(objKeys[index], item.createDate, item));
+            periodsDate.add(
+                ShowDateTime(item.createDate.split(' ').first, item: temp));
+          }
         }
-        periodsDate
-            .add(ShowDateTime(item.createDate.split(' ').first, item: temp));
       }
     } else {
       for (var item in contents) {
         var temp = <KeepData>[];
         int index = contents.indexOf(item);
-        if (rangDate.contains(item.createDate.split(' ').first)) {
-          temp.add(item.saveDataObj(objKeys[index], item.createDate));
-          periodsDate
-              .add(ShowDateTime(item.createDate.split(' ').first, item: temp));
+        if (tag == '') {
+          if (rangDate.contains(item.createDate.split(' ').first)) {
+            temp.add(item.saveDataObj(objKeys[index], item.createDate, item));
+            periodsDate.add(
+                ShowDateTime(item.createDate.split(' ').first, item: temp));
+          }
+        } else {
+          if (rangDate.contains(item.createDate.split(' ').first) &&
+              item.hashTags!.contains(tag!)) {
+            temp.add(item.saveDataObj(objKeys[index], item.createDate, item));
+            periodsDate.add(
+                ShowDateTime(item.createDate.split(' ').first, item: temp));
+          }
         }
       }
     }
@@ -402,7 +478,7 @@ class ControllerContent extends GetxController {
     JsonEncoder encoder = JsonEncoder.withIndent(" ");
     for (var item in contents) {
       int index = contents.indexOf(item);
-      temp.add(item.saveDataObj(objKeys[index], item.createDate));
+      temp.add(item.saveDataObj(objKeys[index], item.createDate, item));
     }
     Get.dialog(AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),

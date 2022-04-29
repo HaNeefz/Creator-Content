@@ -1,3 +1,4 @@
+import 'package:creator_content/models/object_content.dart';
 import 'package:creator_content/utils/open_link.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -11,11 +12,13 @@ class LayoutWebview extends StatelessWidget {
   final LAYOUT_WEBVIEW_TYPE type;
   final String data;
   final bool isPreview;
+  final ObjectContent? obj;
   const LayoutWebview({
     Key? key,
     this.type = LAYOUT_WEBVIEW_TYPE.YOUTUBE,
     required this.data,
     this.isPreview = false,
+    this.obj,
   }) : super(key: key);
 
   @override
@@ -29,6 +32,9 @@ class LayoutWebview extends StatelessWidget {
         final url =
             "https://www.youtube.com/embed/${data.toString().split('/').last}";
         return Templete(
+          addPaddingHorizontal: true,
+          obj: obj,
+          isPreview: isPreview,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -46,6 +52,9 @@ class LayoutWebview extends StatelessWidget {
       case LAYOUT_WEBVIEW_TYPE.TIKTOK:
         final url = "${data.toString().split('?').first}";
         return Templete(
+          addPaddingHorizontal: true,
+          obj: obj,
+          isPreview: isPreview,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -63,6 +72,9 @@ class LayoutWebview extends StatelessWidget {
       case LAYOUT_WEBVIEW_TYPE.TWTTER:
         final url = "$data";
         return Templete(
+          addPaddingHorizontal: true,
+          obj: obj,
+          isPreview: isPreview,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -80,6 +92,9 @@ class LayoutWebview extends StatelessWidget {
       case LAYOUT_WEBVIEW_TYPE.INSTAGRAM:
         final url = "$data";
         return Templete(
+          addPaddingHorizontal: true,
+          obj: obj,
+          isPreview: isPreview,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

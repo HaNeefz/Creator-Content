@@ -1,4 +1,4 @@
 class LayoutConstant {
-  static const paddingVertical = 15.0;
-  static const paddingHorizontal = 10.0;
+  static const paddingVertical = 8.0;
+  static const paddingHorizontal = 20.0;
 }

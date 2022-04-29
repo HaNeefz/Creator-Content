@@ -42,7 +42,8 @@ class PhotoViewPage extends StatelessWidget {
                 debugPrint('tag : $tag');
                 return ExtendedImageSlidePage(
                   child: Hero(
-                    tag: tag,
+                    transitionOnUserGestures: true,
+                    tag: heroTag!,
                     child: ExtendedImage.memory(
                       controller.images[index].image!,
                       width: MediaQuery.of(context).size.width,

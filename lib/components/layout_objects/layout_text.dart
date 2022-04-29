@@ -2,6 +2,8 @@ import 'package:creator_content/components/layout_objects/template.dart';
 import 'package:creator_content/utils/open_link.dart';
 import 'package:flutter/material.dart';
 
+import 'constant.dart';
+
 class LayoutText extends StatelessWidget {
   final String data;
   final TextStyle style;
@@ -16,7 +18,9 @@ class LayoutText extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Templete(
-        customPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+        customPadding: const EdgeInsets.symmetric(
+            horizontal: LayoutConstant.paddingHorizontal,
+            vertical: LayoutConstant.paddingVertical),
         child: GestureDetector(
           child: Text(data, style: style),
           onTap: canTap

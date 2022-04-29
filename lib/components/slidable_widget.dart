@@ -54,7 +54,8 @@ class SlidableWidget extends StatelessWidget {
               if (contentTpye == CONTENT_TYPE.LOCATION)
                 IconSlideAction(
                   caption: 'Edit',
-                  color: Colors.blue,
+                  foregroundColor: Colors.white,
+                  color: Colors.lightBlueAccent,
                   icon: Icons.map_sharp,
                   onTap: () async {
                     await controller.onEditLocation(objId);
@@ -74,7 +75,19 @@ class SlidableWidget extends StatelessWidget {
               //       controller.onModify(objId);
               //     },
               //   ),
-              if (!controller.hasModify)
+              if (!controller.hasModify) ...[
+                IconSlideAction(
+                  caption: 'Hashtag',
+                  foregroundColor: Colors.white,
+                  color: Colors.blue,
+                  icon: Icons.tag_rounded,
+                  onTap: () async {
+                    controller.addHashTags(
+                        index,
+                        await Popup.addHashTag(
+                            controller.contents[index].hashTags));
+                  },
+                ),
                 IconSlideAction(
                   caption: 'Delete',
                   color: Colors.red,
@@ -83,7 +96,18 @@ class SlidableWidget extends StatelessWidget {
                     Popup.actions('Confirm to delete.',
                         onConfirm: () => controller.removeContentAt(index));
                   },
-                ),
+                )
+              ]
+              // if (!controller.hasModify)
+              //   IconSlideAction(
+              //     caption: 'Delete',
+              //     color: Colors.red,
+              //     icon: Icons.delete,
+              //     onTap: () {
+              //       Popup.actions('Confirm to delete.',
+              //           onConfirm: () => controller.removeContentAt(index));
+              //     },
+              //   ),
             ]
             // IconSlideAction(
             //   caption: 'More',
